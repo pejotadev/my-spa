@@ -2,9 +2,27 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+input AddCategoryToProviderDto {
+  categoryName: String!
+  description: String
+}
+
 type AuthPayload {
   access_token: String!
   user: User!
+}
+
+type Category {
+  createdAt: DateTime!
+  description: String
+  id: ID!
+  name: String!
+  updatedAt: DateTime!
+}
+
+input CreateCategoryDto {
+  description: String
+  name: String!
 }
 
 input CreateUserDto {
@@ -26,18 +44,34 @@ input LoginDto {
 }
 
 type Mutation {
+  addCategoryToMe(addCategoryDto: AddCategoryToProviderDto!): ServiceProviderCategory!
+  createCategory(createCategoryDto: CreateCategoryDto!): Category!
   createUser(createUserDto: CreateUserDto!): User!
   login(loginDto: LoginDto!): AuthPayload!
+  removeCategoryFromMe(categoryId: String!): ServiceProviderCategory!
   removeUser(id: String!): User!
   updateUser(id: String!, updateUserDto: UpdateUserDto!): User!
 }
 
 type Query {
+  categories: [Category!]!
+  category(id: String!): Category!
   customers: [User!]!
   me: User!
+  myCategories: [Category!]!
+  myCategoryRelations: [ServiceProviderCategory!]!
   serviceProviders: [User!]!
   user(id: String!): User!
   users: [User!]!
+}
+
+type ServiceProviderCategory {
+  category: Category!
+  categoryId: String!
+  createdAt: DateTime!
+  id: ID!
+  serviceProvider: User!
+  serviceProviderId: String!
 }
 
 input UpdateUserDto {

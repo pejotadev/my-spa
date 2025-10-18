@@ -6,6 +6,7 @@ import { client } from './utils/apollo';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import ServiceProviderDashboard from './pages/ServiceProviderDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const AppRoutes: React.FC = () => {
@@ -30,6 +31,14 @@ const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute requireAdmin>
             <AdminDashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/service-provider" 
+        element={
+          <ProtectedRoute requireRole="SERVICE_PROVIDER">
+            <ServiceProviderDashboard />
           </ProtectedRoute>
         } 
       />

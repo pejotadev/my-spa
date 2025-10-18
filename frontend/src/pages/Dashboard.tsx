@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useGetMeQuery } from '../utils/graphql';
 import Layout from '../components/Layout';
@@ -45,6 +46,29 @@ const Dashboard: React.FC = () => {
                   {currentUser?.createdAt ? new Date(currentUser.createdAt).toLocaleDateString() : 'N/A'}
                 </p>
               </div>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {currentUser?.role === 'ADMIN' && (
+              <Link
+                to="/admin"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg text-center font-medium transition-colors"
+              >
+                Admin Dashboard
+              </Link>
+            )}
+            {currentUser?.role === 'SERVICE_PROVIDER' && (
+              <Link
+                to="/service-provider"
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg text-center font-medium transition-colors"
+              >
+                Manage Categories
+              </Link>
+            )}
+            <div className="bg-gray-100 px-4 py-3 rounded-lg text-center text-gray-600">
+              More features coming soon...
             </div>
           </div>
         </div>

@@ -89,7 +89,7 @@ export class UsersResolver {
   @Query(() => User, { name: 'me' })
   @Public()
   getProfile(@Context() context: any) {
-    // For now, return the admin user for testing
-    return this.usersService.findOne('cmgwjyn15000094tw5itdy53s');
+    // For now, return the service provider user for testing
+    return this.usersService.findOne('cmgwjyn53000294tw4kvbqhf5');
   }
 }

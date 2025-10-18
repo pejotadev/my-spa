@@ -21,5 +21,36 @@ model User {
   updatedAt DateTime @updatedAt
   createdBy String?  // ID of the admin who created this user
 
+  // Relacionamento com categorias (apenas para service providers)
+  serviceProviderCategories ServiceProviderCategory[]
+
   @@map("users")
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relacionamento com service providers
+  serviceProviders ServiceProviderCategory[]
+
+  @@map("categories")
+}
+
+model ServiceProviderCategory {
+  id           String   @id @default(cuid())
+  serviceProviderId String
+  categoryId   String
+  createdAt    DateTime @default(now())
+
+  // Relacionamentos
+  serviceProvider User     @relation(fields: [serviceProviderId], references: [id], onDelete: Cascade)
+  category        Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  // Índice único para evitar duplicatas
+  @@unique([serviceProviderId, categoryId])
+  @@map("service_provider_categories")
 }
