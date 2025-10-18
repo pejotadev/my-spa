@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { gql } from '@apollo/client';
+import { Link } from 'react-router-dom';
+import Layout from '../components/Layout';
 
 // GraphQL Queries and Mutations
 const GET_MY_CATEGORIES = gql`
@@ -127,11 +129,24 @@ const ServiceProviderDashboard: React.FC = () => {
   const allCategories = allCategoriesData?.categories || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <Layout>
+      <div className="px-4 py-6 sm:px-0">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Service Provider Dashboard</h1>
-          <p className="mt-2 text-gray-600">Manage your service categories</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Service Provider Dashboard</h1>
+              <p className="mt-2 text-gray-600">Manage your service categories</p>
+            </div>
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to Dashboard
+            </Link>
+          </div>
         </div>
 
         {/* Add New Category Form */}
@@ -257,7 +272,7 @@ const ServiceProviderDashboard: React.FC = () => {
           )}
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 
