@@ -6,7 +6,9 @@ import Layout from '../components/Layout';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const { data, loading, error } = useGetMeQuery();
+  const { data, loading, error } = useGetMeQuery({
+    fetchPolicy: 'network-only' // Always fetch fresh data from server
+  });
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;

@@ -87,9 +87,10 @@ export class UsersResolver {
   }
 
   @Query(() => User, { name: 'me' })
-  @Public()
+  @UseGuards(GraphqlJwtGuard)
   getProfile(@Context() context: any) {
-    // For now, return the service provider user for testing
-    return this.usersService.findOne('cmgwjyn53000294tw4kvbqhf5');
+    // Return the user from the JWT token
+    const userId = context.req.user.sub;
+    return this.usersService.findOne(userId);
   }
 }

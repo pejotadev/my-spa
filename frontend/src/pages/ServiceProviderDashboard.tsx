@@ -71,8 +71,12 @@ const ServiceProviderDashboard: React.FC = () => {
   const [newCategoryDescription, setNewCategoryDescription] = useState('');
 
   // Queries
-  const { data: myCategoriesData, loading: myCategoriesLoading, refetch: refetchMyCategories } = useQuery(GET_MY_CATEGORIES);
-  const { data: allCategoriesData, loading: allCategoriesLoading } = useQuery(GET_ALL_CATEGORIES);
+  const { data: myCategoriesData, loading: myCategoriesLoading, refetch: refetchMyCategories } = useQuery(GET_MY_CATEGORIES, {
+    fetchPolicy: 'network-only' // Always fetch fresh data from server
+  });
+  const { data: allCategoriesData, loading: allCategoriesLoading } = useQuery(GET_ALL_CATEGORIES, {
+    fetchPolicy: 'network-only' // Always fetch fresh data from server
+  });
 
   // Mutations
   const [addCategoryToMe, { loading: addingCategory }] = useMutation(ADD_CATEGORY_TO_ME, {

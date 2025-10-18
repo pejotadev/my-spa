@@ -1,5 +1,6 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { User, UserRole } from '../types';
+import { client } from '../utils/apollo';
 
 interface AuthContextType {
   user: User | null;
@@ -41,6 +42,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
+    // Clear Apollo Client cache to prevent data from previous user
+    client.clearStore();
   };
 
   const isAuthenticated = !!user;
