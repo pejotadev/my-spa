@@ -1,4 +1,4 @@
-import { Resolver, Query, Args } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { NylasService } from '../nylas/nylas.service';
 import { SimpleJwtGuard } from '../auth/simple-jwt.guard';
@@ -67,6 +67,37 @@ export class BookingResolver {
       return JSON.stringify(availability);
     } catch (error) {
       throw new Error(`Failed to fetch availability: ${error.message}`);
+    }
+  }
+
+  @Mutation(() => String, { name: 'createBooking' })
+  @Public()
+  async createBooking(
+    @Args('configurationId') configurationId: string,
+    @Args('startTime') startTime: string,
+    @Args('endTime') endTime: string,
+    @Args('customerEmail') customerEmail: string,
+    @Args('customerName') customerName: string,
+  ) {
+    try {
+      const bookingData = {
+        configuration_id: configurationId,
+        start_time: Math.floor(new Date(startTime).getTime() / 1000),
+        end_time: Math.floor(new Date(endTime).getTime() / 1000),
+        participants: [
+          {
+            email: customerEmail,
+            name: customerName,
+          }
+        ],
+        title: `Meeting with ${customerName}`,
+        description: `Scheduled appointment with ${customerName}`,
+      };
+
+      const booking = await this.nylasService.createBooking(bookingData);
+      return JSON.stringify(booking);
+    } catch (error) {
+      throw new Error(`Failed to create booking: ${error.message}`);
     }
   }
 }

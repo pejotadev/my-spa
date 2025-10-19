@@ -47,6 +47,7 @@ type Mutation {
   addCategoryToMe(addCategoryDto: AddCategoryToProviderDto!): ServiceProviderCategory!
   cancelBooking(bookingId: String!, configurationId: String!): String!
   confirmBooking(bookingId: String!, configurationId: String!): String!
+  createBooking(configurationId: String!, customerEmail: String!, customerName: String!, endTime: String!, startTime: String!): String!
   createCategory(createCategoryDto: CreateCategoryDto!): Category!
   createConfiguration(configurationData: String!): String!
   createUser(createUserDto: CreateUserDto!): User!

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import { gql } from '@apollo/client';
 
 // GraphQL Queries
@@ -28,6 +28,24 @@ const GET_PROVIDER_CONFIGURATIONS = gql`
 const GET_AVAILABILITY = gql`
   query GetAvailability($configurationId: String!, $startTime: String!, $endTime: String!) {
     getAvailability(configurationId: $configurationId, startTime: $startTime, endTime: $endTime)
+  }
+`;
+
+const CREATE_BOOKING = gql`
+  mutation CreateBooking(
+    $configurationId: String!
+    $startTime: String!
+    $endTime: String!
+    $customerEmail: String!
+    $customerName: String!
+  ) {
+    createBooking(
+      configurationId: $configurationId
+      startTime: $startTime
+      endTime: $endTime
+      customerEmail: $customerEmail
+      customerName: $customerName
+    )
   }
 `;
 
@@ -71,6 +89,9 @@ const CustomerBooking: React.FC = () => {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
   const [availableDates, setAvailableDates] = useState<string[]>([]);
   const [loadingDates, setLoadingDates] = useState<boolean>(false);
+  const [bookingSuccess, setBookingSuccess] = useState<boolean>(false);
+  const [bookingError, setBookingError] = useState<string>('');
+  const [isCreatingBooking, setIsCreatingBooking] = useState<boolean>(false);
 
   // Queries
   const { data: categoriesData, loading: categoriesLoading } = useQuery(GET_CATEGORIES, {
@@ -97,6 +118,19 @@ const CustomerBooking: React.FC = () => {
     },
     skip: !selectedConfiguration || !selectedDate,
     fetchPolicy: 'network-only'
+  });
+
+  // Mutations
+  const [createBooking, { loading: creatingBooking }] = useMutation(CREATE_BOOKING, {
+    onCompleted: (data) => {
+      setBookingSuccess(true);
+      setIsCreatingBooking(false);
+      setBookingError('');
+    },
+    onError: (error) => {
+      setBookingError(error.message);
+      setIsCreatingBooking(false);
+    },
   });
 
   const categories: Category[] = categoriesData?.categories || [];
@@ -172,6 +206,44 @@ const CustomerBooking: React.FC = () => {
 
   const handleTimeSlotSelect = (timeSlot: string) => {
     setSelectedTimeSlot(timeSlot);
+  };
+
+  const handleConfirmBooking = async () => {
+    if (!selectedConfiguration || !selectedTimeSlot) return;
+
+    setIsCreatingBooking(true);
+    setBookingError('');
+    setBookingSuccess(false);
+
+    try {
+      // Calculate end time (assuming 30 minutes duration)
+      const startTime = new Date(selectedTimeSlot);
+      const endTime = new Date(startTime.getTime() + 30 * 60 * 1000);
+
+      await createBooking({
+        variables: {
+          configurationId: selectedConfiguration,
+          startTime: startTime.toISOString(),
+          endTime: endTime.toISOString(),
+          customerEmail: 'customer@example.com', // In a real app, get from user context
+          customerName: 'Customer Name', // In a real app, get from user context
+        },
+      });
+    } catch (error) {
+      console.error('Error creating booking:', error);
+    }
+  };
+
+  const handleResetBooking = () => {
+    setSelectedCategory('');
+    setSelectedProvider('');
+    setSelectedConfiguration('');
+    setSelectedDate('');
+    setSelectedTimeSlot('');
+    setAvailableDates([]);
+    setBookingSuccess(false);
+    setBookingError('');
+    setIsCreatingBooking(false);
   };
 
   const formatDate = (dateString: string) => {
@@ -483,17 +555,106 @@ const CustomerBooking: React.FC = () => {
             </div>
             
             <div className="flex space-x-3">
-              <button className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-md hover:shadow-lg">
-                <svg className="inline-block h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Confirm Booking
+              <button 
+                onClick={handleConfirmBooking}
+                disabled={isCreatingBooking}
+                className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-md hover:shadow-lg"
+              >
+                {isCreatingBooking ? (
+                  <>
+                    <svg className="inline-block animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Creating Booking...
+                  </>
+                ) : (
+                  <>
+                    <svg className="inline-block h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Confirm Booking
+                  </>
+                )}
               </button>
               <button 
                 onClick={() => setSelectedTimeSlot('')}
-                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                disabled={isCreatingBooking}
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Change Time
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Booking Success */}
+        {bookingSuccess && (
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-8 shadow-lg">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-green-900 mb-2">Booking Confirmed!</h2>
+              <p className="text-green-700 mb-6">
+                🎉 Your appointment has been successfully scheduled and added to the service provider's calendar!
+              </p>
+              <div className="bg-white rounded-lg p-4 mb-6 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                  <div>
+                    <div className="text-sm text-gray-500">Date & Time</div>
+                    <div className="font-medium text-gray-900">
+                      {formatDate(selectedDate)} at {formatTime(selectedTimeSlot)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-500">Service</div>
+                    <div className="font-medium text-gray-900">
+                      {configurations.find(c => c.id === selectedConfiguration)?.name}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex space-x-3 justify-center">
+                <button 
+                  onClick={handleResetBooking}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                >
+                  Book Another Service
+                </button>
+                <button 
+                  onClick={() => window.print()}
+                  className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                >
+                  Print Confirmation
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Booking Error */}
+        {bookingError && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-6 shadow-lg">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-lg font-medium text-red-900">Booking Failed</h3>
+                <p className="text-red-700 mt-1">{bookingError}</p>
+              </div>
+            </div>
+            <div className="mt-4">
+              <button 
+                onClick={() => setBookingError('')}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Try Again
               </button>
             </div>
           </div>
