@@ -1,14 +1,12 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Reflector } from '@nestjs/core';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class SimpleJwtGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private reflector: Reflector,
-    private configService: ConfigService,
   ) {}
 
   canActivate(context: ExecutionContext): boolean {
@@ -16,48 +14,39 @@ export class SimpleJwtGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-    
     if (isPublic) {
       return true;
     }
 
-    // For GraphQL context, we need to get the request from the context
-    let request;
-    try {
-      request = context.switchToHttp().getRequest();
-    } catch {
-      // If HTTP context fails, try to get from GraphQL context
-      const gqlContext = context.getArgByIndex(2);
-      request = gqlContext?.req;
+    // For GraphQL, get the request from the context
+    const ctx = context.getArgByIndex(2);
+    const request = ctx?.req;
+
+    if (!request) {
+      throw new UnauthorizedException('No request found');
     }
-    
-    if (!request || !request.headers) {
-      throw new UnauthorizedException();
-    }
-    
+
     const token = this.extractTokenFromHeader(request);
     
     if (!token) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('No token provided');
     }
-    
+
     try {
-      const payload = this.jwtService.verify(token, {
-        secret: this.configService.get<string>('JWT_SECRET') || 'your-super-secret-jwt-key-change-this-in-production',
-      });
-      request.user = payload;
-    } catch {
-      throw new UnauthorizedException();
+      const payload = this.jwtService.verify(token);
+      request.user = {
+        userId: payload.sub,
+        email: payload.email,
+        role: payload.role,
+      };
+      return true;
+    } catch (error) {
+      throw new UnauthorizedException('Invalid token');
     }
-    
-    return true;
   }
 
   private extractTokenFromHeader(request: any): string | undefined {
-    if (!request || !request.headers || !request.headers.authorization) {
-      return undefined;
-    }
-    const [type, token] = request.headers.authorization.split(' ') ?? [];
+    const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
   }
 }

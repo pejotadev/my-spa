@@ -3,6 +3,7 @@ import { useQuery, useMutation } from '@apollo/client';
 import { gql } from '@apollo/client';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
+import SchedulerManager from '../components/SchedulerManager';
 
 // GraphQL Queries and Mutations
 const GET_MY_CATEGORIES = gql`
@@ -67,6 +68,7 @@ interface ServiceProviderCategory {
 }
 
 const ServiceProviderDashboard: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'categories' | 'scheduler'>('categories');
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryDescription, setNewCategoryDescription] = useState('');
 
@@ -139,7 +141,7 @@ const ServiceProviderDashboard: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Service Provider Dashboard</h1>
-              <p className="mt-2 text-gray-600">Manage your service categories</p>
+              <p className="mt-2 text-gray-600">Manage your service categories and scheduling</p>
             </div>
             <Link
               to="/dashboard"
@@ -153,8 +155,40 @@ const ServiceProviderDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Add New Category Form */}
-        <div className="bg-white shadow rounded-lg p-6 mb-8">
+        {/* Tab Navigation */}
+        <div className="border-b border-gray-200 mb-6">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab('categories')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'categories'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Categories
+            </button>
+            <button
+              onClick={() => setActiveTab('scheduler')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'scheduler'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Scheduler
+            </button>
+          </nav>
+        </div>
+
+        {/* Scheduler Tab */}
+        {activeTab === 'scheduler' && <SchedulerManager />}
+
+        {/* Categories Tab */}
+        {activeTab === 'categories' && (
+          <>
+            {/* Add New Category Form */}
+            <div className="bg-white shadow rounded-lg p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Add New Category</h2>
           <form onSubmit={handleAddCategory} className="space-y-4">
             <div>
@@ -275,6 +309,8 @@ const ServiceProviderDashboard: React.FC = () => {
             </div>
           )}
         </div>
+          </>
+        )}
       </div>
     </Layout>
   );

@@ -45,11 +45,18 @@ input LoginDto {
 
 type Mutation {
   addCategoryToMe(addCategoryDto: AddCategoryToProviderDto!): ServiceProviderCategory!
+  cancelBooking(bookingId: String!, configurationId: String!): String!
+  confirmBooking(bookingId: String!, configurationId: String!): String!
   createCategory(createCategoryDto: CreateCategoryDto!): Category!
+  createConfiguration(configurationData: String!): String!
   createUser(createUserDto: CreateUserDto!): User!
+  deleteBooking(bookingId: String!, configurationId: String!): Boolean!
+  deleteConfiguration(configurationId: String!): Boolean!
   login(loginDto: LoginDto!): AuthPayload!
   removeCategoryFromMe(categoryId: String!): ServiceProviderCategory!
   removeUser(id: String!): User!
+  updateBooking(bookingData: String!, bookingId: String!, configurationId: String!): String!
+  updateConfiguration(configurationData: String!, configurationId: String!): String!
   updateUser(id: String!, updateUserDto: UpdateUserDto!): User!
 }
 
@@ -57,6 +64,11 @@ type Query {
   categories: [Category!]!
   category(id: String!): Category!
   customers: [User!]!
+  getAvailability(configurationId: String!, endTime: String!, startTime: String!): String!
+  getBooking(bookingId: String!, configurationId: String!): String!
+  getConfiguration(configurationId: String!): String!
+  getMyBookings(configurationId: String!, limit: Float! = 20, pageToken: String): String!
+  getMyConfigurations: String!
   me: User!
   myCategories: [Category!]!
   myCategoryRelations: [ServiceProviderCategory!]!
