@@ -144,10 +144,14 @@ export class NylasService {
   // Availability Management
   async getAvailability(configurationId: string, startTime: string, endTime: string) {
     try {
+      // Convert ISO strings to Unix timestamps
+      const startTimestamp = Math.floor(new Date(startTime).getTime() / 1000);
+      const endTimestamp = Math.floor(new Date(endTime).getTime() / 1000);
+
       const params = new URLSearchParams({
         configuration_id: configurationId,
-        start_time: startTime,
-        end_time: endTime,
+        start_time: startTimestamp.toString(),
+        end_time: endTimestamp.toString(),
       });
 
       const response = await this.httpClient.get(`/v3/scheduling/availability?${params.toString()}`);

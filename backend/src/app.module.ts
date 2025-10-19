@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { CategoriesModule } from './categories/categories.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
+import { BookingModule } from './booking/booking.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { SchedulerModule } from './scheduler/scheduler.module';
     UsersModule,
     CategoriesModule,
     SchedulerModule,
+    BookingModule,
   ],
   // providers: [
   //   {

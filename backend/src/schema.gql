@@ -69,6 +69,8 @@ type Query {
   getConfiguration(configurationId: String!): String!
   getMyBookings(configurationId: String!, limit: Float! = 20, pageToken: String): String!
   getMyConfigurations: String!
+  getProviderConfigurations(providerEmail: String!): String!
+  getServiceProvidersByCategory(categoryId: String!): String!
   me: User!
   myCategories: [Category!]!
   myCategoryRelations: [ServiceProviderCategory!]!
