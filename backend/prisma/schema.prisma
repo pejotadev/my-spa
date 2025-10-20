@@ -17,6 +17,7 @@ model User {
   firstName String
   lastName  String
   role      String   @default("CUSTOMER") // ADMIN, CUSTOMER, SERVICE_PROVIDER
+  nylasGrantId String? // Nylas Grant ID for service providers
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   createdBy String?  // ID of the admin who created this user

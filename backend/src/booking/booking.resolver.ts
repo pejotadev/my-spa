@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Context } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { NylasService } from '../nylas/nylas.service';
 import { SimpleJwtGuard } from '../auth/simple-jwt.guard';
@@ -6,6 +6,7 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Public } from '../auth/public.decorator';
 import { PrismaService } from '../prisma/prisma.service';
+import { CurrentUser } from '../auth/current-user.decorator';
 
 @Resolver()
 export class BookingResolver {
@@ -71,15 +72,19 @@ export class BookingResolver {
   }
 
   @Mutation(() => String, { name: 'createBooking' })
-  @Public()
+  @UseGuards(SimpleJwtGuard)
   async createBooking(
     @Args('configurationId') configurationId: string,
     @Args('startTime') startTime: string,
     @Args('endTime') endTime: string,
     @Args('customerEmail') customerEmail: string,
     @Args('customerName') customerName: string,
+    @CurrentUser() user: any,
   ) {
     try {
+      // Use the logged-in user's email as the service provider
+      const serviceProviderEmail = user.email;
+
       const bookingData = {
         configuration_id: configurationId,
         start_time: Math.floor(new Date(startTime).getTime() / 1000),
@@ -94,7 +99,7 @@ export class BookingResolver {
         description: `Scheduled appointment with ${customerName}`,
       };
 
-      const booking = await this.nylasService.createBooking(bookingData);
+      const booking = await this.nylasService.createBooking(bookingData, serviceProviderEmail);
       return JSON.stringify(booking);
     } catch (error) {
       throw new Error(`Failed to create booking: ${error.message}`);

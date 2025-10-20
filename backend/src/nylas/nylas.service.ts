@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class NylasService {
@@ -9,7 +10,7 @@ export class NylasService {
   private readonly apiKey = 'nyk_v0_g8uBlVOoLDEORzriZ7lKNQRrmTTEyLWiajeHcw62nY87ZIfuNLV2AiRkZagSaGxL';
   private readonly grantId = '496dd5ae-ed2e-46ce-9735-acbe543fdadd';
 
-  constructor() {
+  constructor(private prisma: PrismaService) {
     this.httpClient = axios.create({
       baseURL: this.baseUrl,
       headers: {
@@ -162,9 +163,32 @@ export class NylasService {
     }
   }
 
-  // Booking Management
-  async createBooking(bookingData: any) {
+  // Helper method to get grant ID for a user
+  async getUserGrantId(userEmail: string): Promise<string | null> {
     try {
+      const user = await this.prisma.user.findUnique({
+        where: { email: userEmail },
+        select: { nylasGrantId: true }
+      });
+      return user?.nylasGrantId || null;
+    } catch (error) {
+      this.logger.error('Error fetching user grant ID:', error);
+      return null;
+    }
+  }
+
+  // Booking Management
+  async createBooking(bookingData: any, serviceProviderEmail?: string) {
+    try {
+      // Get the grant ID for the service provider
+      let grantId = this.grantId; // fallback to default
+      if (serviceProviderEmail) {
+        const userGrantId = await this.getUserGrantId(serviceProviderEmail);
+        if (userGrantId) {
+          grantId = userGrantId;
+        }
+      }
+
       // Create a real calendar event using Nylas API
       const eventData = {
         title: bookingData.title || `Meeting with ${bookingData.participants?.[0]?.name || 'Customer'}`,
@@ -183,10 +207,10 @@ export class NylasService {
         ]
       };
 
-      this.logger.log('Creating calendar event with data:', JSON.stringify(eventData, null, 2));
+      this.logger.log(`Creating calendar event for grant ${grantId} with data:`, JSON.stringify(eventData, null, 2));
 
       // Create the event in the service provider's calendar using the correct endpoint
-      const eventResponse = await this.httpClient.post(`/v3/grants/${this.grantId}/events?calendar_id=primary`, eventData);
+      const eventResponse = await this.httpClient.post(`/v3/grants/${grantId}/events?calendar_id=primary`, eventData);
       
       this.logger.log('Calendar event created successfully:', eventResponse.data);
 
