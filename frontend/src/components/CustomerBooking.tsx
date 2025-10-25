@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { gql } from '@apollo/client';
+import { useAuth } from '../hooks/useAuth';
 
 // GraphQL Queries
 const GET_CATEGORIES = gql`
@@ -26,8 +27,8 @@ const GET_PROVIDER_CONFIGURATIONS = gql`
 `;
 
 const GET_AVAILABILITY = gql`
-  query GetAvailability($configurationId: String!, $startTime: String!, $endTime: String!) {
-    getAvailability(configurationId: $configurationId, startTime: $startTime, endTime: $endTime)
+  query GetAvailability($configurationId: String!, $startTime: String!, $endTime: String!, $serviceProviderEmail: String!) {
+    getAvailability(configurationId: $configurationId, startTime: $startTime, endTime: $endTime, serviceProviderEmail: $serviceProviderEmail)
   }
 `;
 
@@ -38,6 +39,7 @@ const CREATE_BOOKING = gql`
     $endTime: String!
     $customerEmail: String!
     $customerName: String!
+    $serviceProviderEmail: String!
   ) {
     createBooking(
       configurationId: $configurationId
@@ -45,6 +47,7 @@ const CREATE_BOOKING = gql`
       endTime: $endTime
       customerEmail: $customerEmail
       customerName: $customerName
+      serviceProviderEmail: $serviceProviderEmail
     )
   }
 `;
@@ -82,6 +85,7 @@ interface TimeSlot {
 }
 
 const CustomerBooking: React.FC = () => {
+  const { user } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedProvider, setSelectedProvider] = useState<string>('');
   const [selectedConfiguration, setSelectedConfiguration] = useState<string>('');
@@ -114,15 +118,16 @@ const CustomerBooking: React.FC = () => {
     variables: { 
       configurationId: selectedConfiguration,
       startTime: selectedDate ? `${selectedDate}T00:00:00Z` : '',
-      endTime: selectedDate ? `${selectedDate}T23:59:59Z` : ''
+      endTime: selectedDate ? `${selectedDate}T23:59:59Z` : '',
+      serviceProviderEmail: selectedProvider
     },
-    skip: !selectedConfiguration || !selectedDate,
+    skip: !selectedConfiguration || !selectedDate || !selectedProvider,
     fetchPolicy: 'network-only'
   });
 
   // Mutations
-  const [createBooking, { loading: creatingBooking }] = useMutation(CREATE_BOOKING, {
-    onCompleted: (data) => {
+  const [createBooking] = useMutation(CREATE_BOOKING, {
+    onCompleted: () => {
       setBookingSuccess(true);
       setIsCreatingBooking(false);
       setBookingError('');
@@ -141,11 +146,17 @@ const CustomerBooking: React.FC = () => {
     ? JSON.parse(configurationsData.getProviderConfigurations).data || []
     : [];
   const availability: TimeSlot[] = availabilityData?.getAvailability 
-    ? JSON.parse(availabilityData.getAvailability).data?.time_slots?.map((slot: any) => ({
-        start: new Date(slot.start_time * 1000).toISOString(),
-        end: new Date(slot.end_time * 1000).toISOString(),
-        available: true
-      })) || []
+    ? JSON.parse(availabilityData.getAvailability).data?.time_slots?.map((slot: any) => {
+        // Create date objects in local timezone
+        const startDate = new Date(slot.start_time * 1000);
+        const endDate = new Date(slot.end_time * 1000);
+        
+        return {
+          start: startDate.toISOString(),
+          end: endDate.toISOString(),
+          available: true
+        };
+      }) || []
     : [];
 
   const handleCategorySelect = (categoryId: string) => {
@@ -169,10 +180,10 @@ const CustomerBooking: React.FC = () => {
     setSelectedTimeSlot('');
     
     // Fetch available dates for the next 30 days
-    await fetchAvailableDates(configurationId);
+    await fetchAvailableDates();
   };
 
-  const fetchAvailableDates = async (configurationId: string) => {
+  const fetchAvailableDates = async () => {
     setLoadingDates(true);
     try {
       const dates: string[] = [];
@@ -209,24 +220,43 @@ const CustomerBooking: React.FC = () => {
   };
 
   const handleConfirmBooking = async () => {
-    if (!selectedConfiguration || !selectedTimeSlot) return;
+    if (!selectedConfiguration || !selectedTimeSlot || !user || !selectedProvider) return;
 
     setIsCreatingBooking(true);
     setBookingError('');
     setBookingSuccess(false);
 
     try {
+      // Combine selected date with selected time slot
+      const selectedDateObj = new Date(selectedDate);
+      const selectedTimeObj = new Date(selectedTimeSlot);
+      
+      // Create the start time by combining date and time
+      const startTime = new Date(
+        selectedDateObj.getFullYear(),
+        selectedDateObj.getMonth(),
+        selectedDateObj.getDate(),
+        selectedTimeObj.getHours(),
+        selectedTimeObj.getMinutes(),
+        selectedTimeObj.getSeconds()
+      );
+      
       // Calculate end time (assuming 30 minutes duration)
-      const startTime = new Date(selectedTimeSlot);
       const endTime = new Date(startTime.getTime() + 30 * 60 * 1000);
+
+      console.log('Selected date:', selectedDate);
+      console.log('Selected time slot:', selectedTimeSlot);
+      console.log('Calculated start time:', startTime.toISOString());
+      console.log('Calculated end time:', endTime.toISOString());
 
       await createBooking({
         variables: {
           configurationId: selectedConfiguration,
           startTime: startTime.toISOString(),
           endTime: endTime.toISOString(),
-          customerEmail: 'customer@example.com', // In a real app, get from user context
-          customerName: 'Customer Name', // In a real app, get from user context
+          customerEmail: user.email,
+          customerName: `${user.firstName} ${user.lastName}`,
+          serviceProviderEmail: selectedProvider,
         },
       });
     } catch (error) {
@@ -262,16 +292,6 @@ const CustomerBooking: React.FC = () => {
     });
   };
 
-  const getMinDate = () => {
-    const today = new Date();
-    return today.toISOString().split('T')[0];
-  };
-
-  const getMaxDate = () => {
-    const maxDate = new Date();
-    maxDate.setDate(maxDate.getDate() + 30); // 30 days from now
-    return maxDate.toISOString().split('T')[0];
-  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
