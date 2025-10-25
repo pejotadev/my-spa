@@ -138,6 +138,7 @@ export type Mutation = {
   deleteGenetics: Genetics;
   deleteLight: Light;
   deletePlant: Plant;
+  deletePlantHistory: Scalars['Boolean']['output'];
   login: AuthPayload;
   removeCategoryFromMe: ServiceProviderCategory;
   removeUser: User;
@@ -147,6 +148,8 @@ export type Mutation = {
   updateGenetics: Genetics;
   updateLight: Light;
   updatePlant: Plant;
+  updatePlantHistory: PlantHistory;
+  updatePlantStage: Plant;
   updateUser: User;
 };
 
@@ -255,6 +258,13 @@ export type MutationDeletePlantArgs = {
 };
 
 
+export type MutationDeletePlantHistoryArgs = {
+  environmentId: Scalars['ID']['input'];
+  historyId: Scalars['ID']['input'];
+  plantId: Scalars['ID']['input'];
+};
+
+
 export type MutationLoginArgs = {
   loginDto: LoginDto;
 };
@@ -309,6 +319,21 @@ export type MutationUpdatePlantArgs = {
 };
 
 
+export type MutationUpdatePlantHistoryArgs = {
+  environmentId: Scalars['ID']['input'];
+  historyId: Scalars['ID']['input'];
+  input: UpdatePlantHistoryDto;
+  plantId: Scalars['ID']['input'];
+};
+
+
+export type MutationUpdatePlantStageArgs = {
+  environmentId: Scalars['ID']['input'];
+  input: UpdatePlantStageDto;
+  plantId: Scalars['ID']['input'];
+};
+
+
 export type MutationUpdateUserArgs = {
   id: Scalars['String']['input'];
   updateUserDto: UpdateUserDto;
@@ -318,6 +343,7 @@ export type Plant = {
   __typename?: 'Plant';
   code: Scalars['String']['output'];
   createdAt: Scalars['DateTime']['output'];
+  currentStage?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   environmentId: Scalars['ID']['output'];
   genetics?: Maybe<Genetics>;
@@ -479,6 +505,15 @@ export type UpdateLightDto = {
 export type UpdatePlantDto = {
   description?: InputMaybe<Scalars['String']['input']>;
   geneticsId?: InputMaybe<Scalars['ID']['input']>;
+};
+
+export type UpdatePlantHistoryDto = {
+  notes?: InputMaybe<Scalars['String']['input']>;
+  stage?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UpdatePlantStageDto = {
+  currentStage: Scalars['String']['input'];
 };
 
 export type UpdateUserDto = {
@@ -736,6 +771,34 @@ export type GetMeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetMeQuery = { __typename?: 'Query', me: { __typename?: 'User', id: string, email: string, firstName: string, lastName: string, role: string, createdAt: any, updatedAt: any } };
+
+export type UpdatePlantStageMutationVariables = Exact<{
+  plantId: Scalars['ID']['input'];
+  environmentId: Scalars['ID']['input'];
+  input: UpdatePlantStageDto;
+}>;
+
+
+export type UpdatePlantStageMutation = { __typename?: 'Mutation', updatePlantStage: { __typename?: 'Plant', id: string, code: string, currentStage?: string | null } };
+
+export type UpdatePlantHistoryMutationVariables = Exact<{
+  historyId: Scalars['ID']['input'];
+  plantId: Scalars['ID']['input'];
+  environmentId: Scalars['ID']['input'];
+  input: UpdatePlantHistoryDto;
+}>;
+
+
+export type UpdatePlantHistoryMutation = { __typename?: 'Mutation', updatePlantHistory: { __typename?: 'PlantHistory', id: string, stage: string, notes?: string | null, createdAt: any } };
+
+export type DeletePlantHistoryMutationVariables = Exact<{
+  historyId: Scalars['ID']['input'];
+  plantId: Scalars['ID']['input'];
+  environmentId: Scalars['ID']['input'];
+}>;
+
+
+export type DeletePlantHistoryMutation = { __typename?: 'Mutation', deletePlantHistory: boolean };
 
 export type GetPlantsByEnvironmentQueryVariables = Exact<{
   environmentId: Scalars['ID']['input'];
@@ -2170,6 +2233,128 @@ export type GetMeQueryResult = Apollo.QueryResult<GetMeQuery, GetMeQueryVariable
 export function refetchGetMeQuery(variables?: GetMeQueryVariables) {
       return { query: GetMeDocument, variables: variables }
     }
+export const UpdatePlantStageDocument = gql`
+    mutation UpdatePlantStage($plantId: ID!, $environmentId: ID!, $input: UpdatePlantStageDto!) {
+  updatePlantStage(
+    plantId: $plantId
+    environmentId: $environmentId
+    input: $input
+  ) {
+    id
+    code
+    currentStage
+  }
+}
+    `;
+export type UpdatePlantStageMutationFn = Apollo.MutationFunction<UpdatePlantStageMutation, UpdatePlantStageMutationVariables>;
+
+/**
+ * __useUpdatePlantStageMutation__
+ *
+ * To run a mutation, you first call `useUpdatePlantStageMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdatePlantStageMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updatePlantStageMutation, { data, loading, error }] = useUpdatePlantStageMutation({
+ *   variables: {
+ *      plantId: // value for 'plantId'
+ *      environmentId: // value for 'environmentId'
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdatePlantStageMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdatePlantStageMutation, UpdatePlantStageMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<UpdatePlantStageMutation, UpdatePlantStageMutationVariables>(UpdatePlantStageDocument, options);
+      }
+export type UpdatePlantStageMutationHookResult = ReturnType<typeof useUpdatePlantStageMutation>;
+export type UpdatePlantStageMutationResult = Apollo.MutationResult<UpdatePlantStageMutation>;
+export type UpdatePlantStageMutationOptions = Apollo.BaseMutationOptions<UpdatePlantStageMutation, UpdatePlantStageMutationVariables>;
+export const UpdatePlantHistoryDocument = gql`
+    mutation UpdatePlantHistory($historyId: ID!, $plantId: ID!, $environmentId: ID!, $input: UpdatePlantHistoryDto!) {
+  updatePlantHistory(
+    historyId: $historyId
+    plantId: $plantId
+    environmentId: $environmentId
+    input: $input
+  ) {
+    id
+    stage
+    notes
+    createdAt
+  }
+}
+    `;
+export type UpdatePlantHistoryMutationFn = Apollo.MutationFunction<UpdatePlantHistoryMutation, UpdatePlantHistoryMutationVariables>;
+
+/**
+ * __useUpdatePlantHistoryMutation__
+ *
+ * To run a mutation, you first call `useUpdatePlantHistoryMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdatePlantHistoryMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updatePlantHistoryMutation, { data, loading, error }] = useUpdatePlantHistoryMutation({
+ *   variables: {
+ *      historyId: // value for 'historyId'
+ *      plantId: // value for 'plantId'
+ *      environmentId: // value for 'environmentId'
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdatePlantHistoryMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdatePlantHistoryMutation, UpdatePlantHistoryMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<UpdatePlantHistoryMutation, UpdatePlantHistoryMutationVariables>(UpdatePlantHistoryDocument, options);
+      }
+export type UpdatePlantHistoryMutationHookResult = ReturnType<typeof useUpdatePlantHistoryMutation>;
+export type UpdatePlantHistoryMutationResult = Apollo.MutationResult<UpdatePlantHistoryMutation>;
+export type UpdatePlantHistoryMutationOptions = Apollo.BaseMutationOptions<UpdatePlantHistoryMutation, UpdatePlantHistoryMutationVariables>;
+export const DeletePlantHistoryDocument = gql`
+    mutation DeletePlantHistory($historyId: ID!, $plantId: ID!, $environmentId: ID!) {
+  deletePlantHistory(
+    historyId: $historyId
+    plantId: $plantId
+    environmentId: $environmentId
+  )
+}
+    `;
+export type DeletePlantHistoryMutationFn = Apollo.MutationFunction<DeletePlantHistoryMutation, DeletePlantHistoryMutationVariables>;
+
+/**
+ * __useDeletePlantHistoryMutation__
+ *
+ * To run a mutation, you first call `useDeletePlantHistoryMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeletePlantHistoryMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deletePlantHistoryMutation, { data, loading, error }] = useDeletePlantHistoryMutation({
+ *   variables: {
+ *      historyId: // value for 'historyId'
+ *      plantId: // value for 'plantId'
+ *      environmentId: // value for 'environmentId'
+ *   },
+ * });
+ */
+export function useDeletePlantHistoryMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<DeletePlantHistoryMutation, DeletePlantHistoryMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<DeletePlantHistoryMutation, DeletePlantHistoryMutationVariables>(DeletePlantHistoryDocument, options);
+      }
+export type DeletePlantHistoryMutationHookResult = ReturnType<typeof useDeletePlantHistoryMutation>;
+export type DeletePlantHistoryMutationResult = Apollo.MutationResult<DeletePlantHistoryMutation>;
+export type DeletePlantHistoryMutationOptions = Apollo.BaseMutationOptions<DeletePlantHistoryMutation, DeletePlantHistoryMutationVariables>;
 export const GetPlantsByEnvironmentDocument = gql`
     query GetPlantsByEnvironment($environmentId: ID!) {
   getPlantsByEnvironment(environmentId: $environmentId) {

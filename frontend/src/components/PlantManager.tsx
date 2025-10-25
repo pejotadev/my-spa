@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import Select from 'react-select';
+import PlantDetails from './PlantDetails';
 import { 
   GetPlantsByEnvironmentDocument, 
   CreatePlantDocument, 
@@ -17,6 +18,7 @@ interface Plant {
   description?: string;
   geneticsId: string;
   environmentId: string;
+  currentStage?: string;
   createdAt: Date;
   updatedAt: Date;
   genetics?: {
@@ -48,6 +50,7 @@ const PlantManager: React.FC<PlantManagerProps> = ({ environmentId }) => {
   const [isCreating, setIsCreating] = useState(false);
   // editingId removed as it's not used in current implementation
   const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
+  const [showPlantDetails, setShowPlantDetails] = useState<string | null>(null);
   // newGeneticsName removed as it's not used in current implementation
   const [formData, setFormData] = useState({
     description: '',
@@ -57,7 +60,7 @@ const PlantManager: React.FC<PlantManagerProps> = ({ environmentId }) => {
   const [showGeneticsModal, setShowGeneticsModal] = useState(false);
   const [pendingGeneticsName, setPendingGeneticsName] = useState('');
   const [historyFormData, setHistoryFormData] = useState({
-    stage: 'germinacao',
+    stage: 'germination',
     notes: '',
   });
 
@@ -86,10 +89,10 @@ const PlantManager: React.FC<PlantManagerProps> = ({ environmentId }) => {
   const plantHistory: PlantHistory[] = historyData?.getPlantHistory || [];
 
   const plantStages = [
-    { value: 'germinacao', label: 'Germinação' },
-    { value: 'muda_clone', label: 'Muda/Clone' },
-    { value: 'vegetativa', label: 'Vegetativa' },
-    { value: 'florativa', label: 'Florativa' },
+    { value: 'germination', label: 'Germination' },
+    { value: 'clone_seedling', label: 'Clone/Seedling' },
+    { value: 'vegetative', label: 'Vegetative' },
+    { value: 'flowering', label: 'Flowering' },
   ];
 
   const handleCreatePlant = async (e: React.FormEvent) => {
@@ -153,7 +156,7 @@ const PlantManager: React.FC<PlantManagerProps> = ({ environmentId }) => {
           },
         },
       });
-      setHistoryFormData({ stage: 'germinacao', notes: '' });
+      setHistoryFormData({ stage: 'germination', notes: '' });
       refetchHistory();
     } catch (error) {
       console.error('Error creating plant history:', error);
@@ -315,6 +318,19 @@ const PlantManager: React.FC<PlantManagerProps> = ({ environmentId }) => {
                   </span>
                   <h3 className="text-lg font-medium text-gray-900">{plant.genetics?.name || 'Unknown Genetics'}</h3>
                 </div>
+                {plant.currentStage && (
+                  <div className="mb-2">
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      plant.currentStage === 'germination' ? 'bg-blue-100 text-blue-800' :
+                      plant.currentStage === 'clone_seedling' ? 'bg-green-100 text-green-800' :
+                      plant.currentStage === 'vegetative' ? 'bg-yellow-100 text-yellow-800' :
+                      plant.currentStage === 'flowering' ? 'bg-red-100 text-red-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {plantStages.find(s => s.value === plant.currentStage)?.label || plant.currentStage}
+                    </span>
+                  </div>
+                )}
                 {plant.description && (
                   <p className="text-sm text-gray-600 mt-1">{plant.description}</p>
                 )}
@@ -324,10 +340,16 @@ const PlantManager: React.FC<PlantManagerProps> = ({ environmentId }) => {
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setSelectedPlantId(plant.id)}
+                  onClick={() => setShowPlantDetails(plant.id)}
                   className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                 >
-                  View History
+                  View Details
+                </button>
+                <button
+                  onClick={() => setSelectedPlantId(plant.id)}
+                  className="text-green-600 hover:text-green-800 text-sm font-medium"
+                >
+                  Quick History
                 </button>
                 <button
                   onClick={() => handleDeletePlant(plant.id)}
@@ -459,8 +481,18 @@ const PlantManager: React.FC<PlantManagerProps> = ({ environmentId }) => {
           </div>
         </div>
       )}
+
+      {/* Plant Details Modal */}
+      {showPlantDetails && (
+        <PlantDetails
+          plantId={showPlantDetails}
+          environmentId={environmentId}
+          onClose={() => setShowPlantDetails(null)}
+        />
+      )}
     </div>
   );
 };
 
 export default PlantManager;
+
