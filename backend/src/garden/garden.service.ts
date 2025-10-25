@@ -299,7 +299,9 @@ export class GardenService {
     }
 
     // Atualizar o stage atual da planta
+    console.log('Updating plant stage:', { plantId, currentStage: data.currentStage });
     const updatedPlant = await EnvironmentRepository.updatePlant(plantId, { currentStage: data.currentStage });
+    console.log('Updated plant:', updatedPlant);
 
     // Criar entrada no histórico automaticamente
     await EnvironmentRepository.createPlantHistory({

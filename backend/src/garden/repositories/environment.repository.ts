@@ -182,13 +182,15 @@ export class EnvironmentRepository {
   }
 
   static async getPlantsByEnvironment(environmentId: string): Promise<Plant[]> {
-    return EnvironmentRepository.prisma.plant.findMany({
+    const plants = await EnvironmentRepository.prisma.plant.findMany({
       where: { environmentId },
       include: {
         genetics: true,
       },
       orderBy: { createdAt: 'desc' },
     });
+    console.log('Found plants:', plants.map(p => ({ id: p.id, code: p.code, currentStage: p.currentStage })));
+    return plants;
   }
 
   static async getPlantById(id: string): Promise<Plant | null> {
