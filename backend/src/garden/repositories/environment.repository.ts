@@ -1,5 +1,5 @@
 import { PrismaService } from '../../prisma/prisma.service';
-import { Environment } from '@prisma/client';
+import { Environment, Light } from '@prisma/client';
 
 export class EnvironmentRepository {
   private static prisma: PrismaService;
@@ -53,6 +53,52 @@ export class EnvironmentRepository {
       where: { 
         id,
         userId 
+      },
+    });
+  }
+
+  // Light CRUD
+  static async createLight(data: {
+    type: string;
+    watts?: number;
+    environmentId: string;
+  }): Promise<Light> {
+    return EnvironmentRepository.prisma.light.create({
+      data,
+    });
+  }
+
+  static async getLightsByEnvironment(environmentId: string): Promise<Light[]> {
+    return EnvironmentRepository.prisma.light.findMany({
+      where: { environmentId },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  static async getLightById(id: string): Promise<Light | null> {
+    return EnvironmentRepository.prisma.light.findUnique({
+      where: { id },
+    });
+  }
+
+  static async updateLight(id: string, data: Partial<Light>): Promise<Light> {
+    return EnvironmentRepository.prisma.light.update({
+      where: { id },
+      data,
+    });
+  }
+
+  static async deleteLight(id: string): Promise<Light> {
+    return EnvironmentRepository.prisma.light.delete({
+      where: { id },
+    });
+  }
+
+  static async getLightByIdAndEnvironment(id: string, environmentId: string): Promise<Light | null> {
+    return EnvironmentRepository.prisma.light.findFirst({
+      where: { 
+        id,
+        environmentId 
       },
     });
   }

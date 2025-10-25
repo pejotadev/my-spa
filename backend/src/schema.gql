@@ -33,6 +33,11 @@ input CreateEnvironmentDto {
   width: Float!
 }
 
+input CreateLightDto {
+  type: String!
+  watts: Float
+}
+
 input CreateUserDto {
   email: String!
   firstName: String!
@@ -59,6 +64,15 @@ type Environment {
   width: Float!
 }
 
+type Light {
+  createdAt: DateTime!
+  environmentId: ID!
+  id: ID!
+  type: String!
+  updatedAt: DateTime!
+  watts: Float
+}
+
 input LoginDto {
   email: String!
   password: String!
@@ -72,16 +86,19 @@ type Mutation {
   createCategory(createCategoryDto: CreateCategoryDto!): Category!
   createConfiguration(configurationData: String!): String!
   createEnvironment(input: CreateEnvironmentDto!): Environment!
+  createLight(environmentId: ID!, input: CreateLightDto!): Light!
   createUser(createUserDto: CreateUserDto!): User!
   deleteBooking(bookingId: String!, configurationId: String!): Boolean!
   deleteConfiguration(configurationId: String!): Boolean!
   deleteEnvironment(id: ID!): Environment!
+  deleteLight(environmentId: ID!, lightId: ID!): Light!
   login(loginDto: LoginDto!): AuthPayload!
   removeCategoryFromMe(categoryId: String!): ServiceProviderCategory!
   removeUser(id: String!): User!
   updateBooking(bookingData: String!, bookingId: String!, configurationId: String!): String!
   updateConfiguration(configurationData: String!, configurationId: String!): String!
   updateEnvironment(id: ID!, input: UpdateEnvironmentDto!): Environment!
+  updateLight(environmentId: ID!, input: UpdateLightDto!, lightId: ID!): Light!
   updateUser(id: String!, updateUserDto: UpdateUserDto!): User!
 }
 
@@ -93,6 +110,7 @@ type Query {
   getBooking(bookingId: String!, configurationId: String!): String!
   getConfiguration(configurationId: String!): String!
   getEnvironment(id: ID!): Environment!
+  getLightsByEnvironment(environmentId: ID!): [Light!]!
   getMyBookings(configurationId: String!, limit: Float! = 20, pageToken: String): String!
   getMyConfigurations: String!
   getMyEnvironments: [Environment!]!
@@ -123,6 +141,11 @@ input UpdateEnvironmentDto {
   isIndoor: Boolean
   name: String
   width: Float
+}
+
+input UpdateLightDto {
+  type: String
+  watts: Float
 }
 
 input UpdateUserDto {

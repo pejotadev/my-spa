@@ -104,7 +104,21 @@ model Environment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lights Light[]
 
   @@map("environments")
+}
+
+model Light {
+  id            String   @id @default(cuid())
+  type          String   // LED, CFL, HPS, Metal Halide, LEC, T5, Sun
+  watts         Float?   // watts (null for Sun)
+  environmentId String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  environment Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+
+  @@map("lights")
 }
