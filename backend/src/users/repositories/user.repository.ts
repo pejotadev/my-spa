@@ -25,6 +25,14 @@ export class UserRepository {
     });
   }
 
+  static async findAllWithEnvironments(): Promise<any[]> {
+    return UserRepository.prisma.user.findMany({
+      include: {
+        environments: true,
+      },
+    });
+  }
+
   static async findOne(id: string): Promise<UserWithoutPassword | null> {
     return UserRepository.prisma.user.findUnique({
       where: { id },
@@ -38,6 +46,15 @@ export class UserRepository {
         createdAt: true,
         updatedAt: true,
         createdBy: true,
+      },
+    });
+  }
+
+  static async findOneWithEnvironments(id: string): Promise<any | null> {
+    return UserRepository.prisma.user.findUnique({
+      where: { id },
+      include: {
+        environments: true,
       },
     });
   }

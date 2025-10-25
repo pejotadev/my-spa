@@ -31,6 +31,21 @@ export class EnvironmentRepository {
     });
   }
 
+  static async getAllEnvironmentsByUserWithRelations(userId: string): Promise<any[]> {
+    return EnvironmentRepository.prisma.environment.findMany({
+      where: { userId },
+      include: {
+        lights: true,
+        plants: {
+          include: {
+            genetics: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   static async getEnvironmentById(id: string): Promise<Environment | null> {
     return EnvironmentRepository.prisma.environment.findUnique({
       where: { id },

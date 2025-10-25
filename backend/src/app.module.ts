@@ -11,6 +11,7 @@ import { SchedulerModule } from './scheduler/scheduler.module';
 import { BookingModule } from './booking/booking.module';
 import { FeaturesModule } from './features/features.module';
 import { GardenModule } from './garden/garden.module';
+import { DataLoaderModule } from './common/dataloaders/dataloader.module';
 import { TestResolver } from './test-resolver';
 
 @Module({
@@ -22,7 +23,10 @@ import { TestResolver } from './test-resolver';
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
-      context: ({ req }) => ({ req }),
+      context: ({ req }) => ({ 
+        req,
+        // DataLoaders serão adicionados pelo interceptor
+      }),
     }),
     PrismaModule,
     AuthModule,
@@ -32,6 +36,7 @@ import { TestResolver } from './test-resolver';
     BookingModule,
     FeaturesModule,
     GardenModule,
+    DataLoaderModule,
   ],
   providers: [TestResolver],
   // providers: [
