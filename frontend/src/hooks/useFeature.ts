@@ -31,7 +31,7 @@ export const useFeature = (featureName: string) => {
   
   // Temporary solution: hardcode feature access based on user email
   // This will be replaced with proper GraphQL queries once the schema is fixed
-  const isEnabled = user?.email === 'ocaradorune@hotmail.com' && featureName === 'BOOK_SERVICE';
+  const isEnabled = user?.email === 'ocaradorune@hotmail.com' && (featureName === 'BOOK_SERVICE' || featureName === 'GARDEN');
   
   return {
     isEnabled,

@@ -5,16 +5,18 @@ import { useGetMeQuery } from '../utils/graphql';
 import { useFeature } from '../hooks/useFeature';
 import Layout from '../components/Layout';
 import CustomerBooking from '../components/CustomerBooking';
+import GardenManager from '../components/GardenManager';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'profile' | 'booking'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'booking' | 'garden'>('profile');
   const { data, loading, error } = useGetMeQuery({
     fetchPolicy: 'network-only' // Always fetch fresh data from server
   });
   
-  // Check if user has BOOK_SERVICE feature enabled
+  // Check if user has features enabled
   const { isEnabled: hasBookService } = useFeature('BOOK_SERVICE');
+  const { isEnabled: hasGarden } = useFeature('GARDEN');
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
@@ -67,6 +69,22 @@ const Dashboard: React.FC = () => {
                   </svg>
                 )}
               </button>
+              <button
+                onClick={() => setActiveTab('garden')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
+                  activeTab === 'garden'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                } ${!hasGarden ? 'opacity-60 cursor-not-allowed' : ''}`}
+                disabled={!hasGarden}
+              >
+                Garden
+                {!hasGarden && (
+                  <svg className="h-4 w-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
             </nav>
           </div>
         )}
@@ -89,6 +107,32 @@ const Dashboard: React.FC = () => {
                   </h3>
                   <p className="text-gray-600 max-w-md">
                     The booking service is currently not available for your account. 
+                    Please contact support to enable this feature.
+                  </p>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Garden Tab for Customers */}
+        {currentUser?.role === 'CUSTOMER' && activeTab === 'garden' && (
+          <>
+            {hasGarden ? (
+              <GardenManager />
+            ) : (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+                <div className="flex flex-col items-center">
+                  <div className="flex-shrink-0 mb-4">
+                    <svg className="h-12 w-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Garden Feature Locked
+                  </h3>
+                  <p className="text-gray-600 max-w-md">
+                    The garden management feature is currently not available for your account. 
                     Please contact support to enable this feature.
                   </p>
                 </div>
