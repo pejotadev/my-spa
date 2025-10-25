@@ -18,6 +18,9 @@ export class Plant {
   @Field(() => ID)
   environmentId: string;
 
+  @Field({ nullable: true })
+  currentStage?: string;
+
   @Field()
   createdAt: Date;
 

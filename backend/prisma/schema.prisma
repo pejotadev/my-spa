@@ -142,6 +142,7 @@ model Plant {
   description   String?  // Descrição da planta
   geneticsId    String   // Referência à genética (nome da planta)
   environmentId String   // Ambiente onde está a planta
+  currentStage  String?  // Current stage: germination, clone_seedling, vegetative, flowering
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -155,7 +156,7 @@ model Plant {
 model PlantHistory {
   id        String   @id @default(cuid())
   plantId   String
-  stage     String   // germinacao, muda_clone, vegetativa, florativa
+  stage     String   // germination, clone_seedling, vegetative, flowering
   notes     String?  // Observações sobre o estado
   createdAt DateTime @default(now())
 

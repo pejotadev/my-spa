@@ -10,12 +10,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     await this.$connect();
     
     if (this.enableQueryLogs) {
-      this.$on('query', (e) => {
-        this.logger.debug(`🗄️  Database Query: ${e.query}`);
-        this.logger.debug(`📝 Parameters: ${e.params}`);
-        this.logger.debug(`⏱️  Execution Time: ${e.duration}ms`);
-        this.logger.debug('─'.repeat(50));
-      });
+      this.logger.debug('🗄️  Database connected with query logging enabled');
     }
   }
 }

@@ -15,10 +15,12 @@ export class DataLoaderService {
         select: {
           id: true,
           email: true,
+          password: true,
           firstName: true,
           lastName: true,
           role: true,
           nylasGrantId: true,
+          score: true,
           createdAt: true,
           updatedAt: true,
           createdBy: true,

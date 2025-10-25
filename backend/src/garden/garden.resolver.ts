@@ -15,6 +15,8 @@ import { UpdatePlantDto } from './dto/update-plant.dto';
 import { CreateGeneticsDto } from './dto/create-genetics.dto';
 import { UpdateGeneticsDto } from './dto/update-genetics.dto';
 import { CreatePlantHistoryDto } from './dto/create-plant-history.dto';
+import { UpdatePlantStageDto } from './dto/update-plant-stage.dto';
+import { UpdatePlantHistoryDto } from './dto/update-plant-history.dto';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
@@ -200,5 +202,36 @@ export class GardenResolver {
     @CurrentUser() user: any
   ): Promise<PlantHistory> {
     return this.gardenService.createPlantHistory(plantId, environmentId, input, user.userId);
+  }
+
+  @Mutation(() => Plant)
+  async updatePlantStage(
+    @Args('plantId', { type: () => ID }) plantId: string,
+    @Args('environmentId', { type: () => ID }) environmentId: string,
+    @Args('input') input: UpdatePlantStageDto,
+    @CurrentUser() user: any
+  ): Promise<Plant> {
+    return this.gardenService.updatePlantStage(plantId, environmentId, input, user.userId);
+  }
+
+  @Mutation(() => PlantHistory)
+  async updatePlantHistory(
+    @Args('historyId', { type: () => ID }) historyId: string,
+    @Args('plantId', { type: () => ID }) plantId: string,
+    @Args('environmentId', { type: () => ID }) environmentId: string,
+    @Args('input') input: UpdatePlantHistoryDto,
+    @CurrentUser() user: any
+  ): Promise<PlantHistory> {
+    return this.gardenService.updatePlantHistory(historyId, plantId, environmentId, input, user.userId);
+  }
+
+  @Mutation(() => Boolean)
+  async deletePlantHistory(
+    @Args('historyId', { type: () => ID }) historyId: string,
+    @Args('plantId', { type: () => ID }) plantId: string,
+    @Args('environmentId', { type: () => ID }) environmentId: string,
+    @CurrentUser() user: any
+  ): Promise<boolean> {
+    return this.gardenService.deletePlantHistory(historyId, plantId, environmentId, user.userId);
   }
 }

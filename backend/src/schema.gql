@@ -120,6 +120,7 @@ type Mutation {
   deleteGenetics(id: ID!): Genetics!
   deleteLight(environmentId: ID!, lightId: ID!): Light!
   deletePlant(environmentId: ID!, plantId: ID!): Plant!
+  deletePlantHistory(environmentId: ID!, historyId: ID!, plantId: ID!): Boolean!
   login(loginDto: LoginDto!): AuthPayload!
   removeCategoryFromMe(categoryId: String!): ServiceProviderCategory!
   removeUser(id: String!): User!
@@ -129,12 +130,15 @@ type Mutation {
   updateGenetics(id: ID!, input: UpdateGeneticsDto!): Genetics!
   updateLight(environmentId: ID!, input: UpdateLightDto!, lightId: ID!): Light!
   updatePlant(environmentId: ID!, input: UpdatePlantDto!, plantId: ID!): Plant!
+  updatePlantHistory(environmentId: ID!, historyId: ID!, input: UpdatePlantHistoryDto!, plantId: ID!): PlantHistory!
+  updatePlantStage(environmentId: ID!, input: UpdatePlantStageDto!, plantId: ID!): Plant!
   updateUser(id: String!, updateUserDto: UpdateUserDto!): User!
 }
 
 type Plant {
   code: String!
   createdAt: DateTime!
+  currentStage: String
   description: String
   environmentId: ID!
   genetics: Genetics
@@ -210,6 +214,15 @@ input UpdateLightDto {
 input UpdatePlantDto {
   description: String
   geneticsId: ID
+}
+
+input UpdatePlantHistoryDto {
+  notes: String
+  stage: String
+}
+
+input UpdatePlantStageDto {
+  currentStage: String!
 }
 
 input UpdateUserDto {

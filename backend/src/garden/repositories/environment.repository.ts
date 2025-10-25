@@ -246,9 +246,12 @@ export class EnvironmentRepository {
     });
   }
 
-  static async getPlantHistoryById(id: string): Promise<PlantHistory | null> {
-    return EnvironmentRepository.prisma.plantHistory.findUnique({
-      where: { id },
+  static async getPlantHistoryById(id: string, plantId?: string): Promise<PlantHistory | null> {
+    return EnvironmentRepository.prisma.plantHistory.findFirst({
+      where: { 
+        id,
+        ...(plantId && { plantId })
+      },
     });
   }
 

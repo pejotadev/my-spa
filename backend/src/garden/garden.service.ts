@@ -15,6 +15,8 @@ import { UpdatePlantDto } from './dto/update-plant.dto';
 import { CreateGeneticsDto } from './dto/create-genetics.dto';
 import { UpdateGeneticsDto } from './dto/update-genetics.dto';
 import { CreatePlantHistoryDto } from './dto/create-plant-history.dto';
+import { UpdatePlantStageDto } from './dto/update-plant-stage.dto';
+import { UpdatePlantHistoryDto } from './dto/update-plant-history.dto';
 
 @Injectable()
 export class GardenService {
@@ -281,5 +283,76 @@ export class GardenService {
     }
 
     return EnvironmentRepository.getPlantHistory(plantId);
+  }
+
+  async updatePlantStage(plantId: string, environmentId: string, data: UpdatePlantStageDto, userId: string): Promise<Plant> {
+    // Verificar se o environment pertence ao usuário
+    const environment = await EnvironmentRepository.getEnvironmentByIdAndUser(environmentId, userId);
+    if (!environment) {
+      throw new NotFoundException('Environment not found');
+    }
+
+    // Verificar se a planta pertence ao environment
+    const plant = await EnvironmentRepository.getPlantByIdAndEnvironment(plantId, environmentId);
+    if (!plant) {
+      throw new NotFoundException('Plant not found');
+    }
+
+    // Atualizar o stage atual da planta
+    const updatedPlant = await EnvironmentRepository.updatePlant(plantId, { currentStage: data.currentStage });
+
+    // Criar entrada no histórico automaticamente
+    await EnvironmentRepository.createPlantHistory({
+      plantId,
+      stage: data.currentStage,
+      notes: `Stage changed to ${data.currentStage}`,
+    });
+
+    return updatedPlant;
+  }
+
+  async updatePlantHistory(historyId: string, plantId: string, environmentId: string, data: UpdatePlantHistoryDto, userId: string): Promise<PlantHistory> {
+    // Verificar se o environment pertence ao usuário
+    const environment = await EnvironmentRepository.getEnvironmentByIdAndUser(environmentId, userId);
+    if (!environment) {
+      throw new NotFoundException('Environment not found');
+    }
+
+    // Verificar se a planta pertence ao environment
+    const plant = await EnvironmentRepository.getPlantByIdAndEnvironment(plantId, environmentId);
+    if (!plant) {
+      throw new NotFoundException('Plant not found');
+    }
+
+    // Verificar se o histórico pertence à planta
+    const history = await EnvironmentRepository.getPlantHistoryById(historyId, plantId);
+    if (!history) {
+      throw new NotFoundException('History entry not found');
+    }
+
+    return EnvironmentRepository.updatePlantHistory(historyId, data);
+  }
+
+  async deletePlantHistory(historyId: string, plantId: string, environmentId: string, userId: string): Promise<boolean> {
+    // Verificar se o environment pertence ao usuário
+    const environment = await EnvironmentRepository.getEnvironmentByIdAndUser(environmentId, userId);
+    if (!environment) {
+      throw new NotFoundException('Environment not found');
+    }
+
+    // Verificar se a planta pertence ao environment
+    const plant = await EnvironmentRepository.getPlantByIdAndEnvironment(plantId, environmentId);
+    if (!plant) {
+      throw new NotFoundException('Plant not found');
+    }
+
+    // Verificar se o histórico pertence à planta
+    const history = await EnvironmentRepository.getPlantHistoryById(historyId, plantId);
+    if (!history) {
+      throw new NotFoundException('History entry not found');
+    }
+
+    await EnvironmentRepository.deletePlantHistory(historyId);
+    return true;
   }
 }
