@@ -4,6 +4,7 @@ import { FeatureRepository } from './repositories/feature.repository';
 import { Feature, UserFeature } from './entities/feature.entity';
 import { CreateFeatureDto } from './dto/create-feature.dto';
 import { UpdateFeatureDto } from './dto/update-feature.dto';
+import { UserFeature as PrismaUserFeature } from '@prisma/client';
 
 @Injectable()
 export class FeaturesService {
@@ -36,15 +37,18 @@ export class FeaturesService {
   }
 
   async enableFeatureForUser(userId: string, featureName: string): Promise<UserFeature> {
-    return FeatureRepository.enableFeatureForUser(userId, featureName);
+    const result = await FeatureRepository.enableFeatureForUser(userId, featureName);
+    return result as UserFeature;
   }
 
   async disableFeatureForUser(userId: string, featureName: string): Promise<UserFeature> {
-    return FeatureRepository.disableFeatureForUser(userId, featureName);
+    const result = await FeatureRepository.disableFeatureForUser(userId, featureName);
+    return result as UserFeature;
   }
 
   async getUserFeatures(userId: string): Promise<UserFeature[]> {
-    return FeatureRepository.getUserFeatures(userId);
+    const result = await FeatureRepository.getUserFeatures(userId);
+    return result as UserFeature[];
   }
 
   async isFeatureEnabledForUser(userId: string, featureName: string): Promise<boolean> {

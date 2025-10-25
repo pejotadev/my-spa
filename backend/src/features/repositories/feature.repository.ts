@@ -73,6 +73,9 @@ export class FeatureRepository {
         featureId: feature.id,
         isEnabled: true,
       },
+      include: {
+        feature: true,
+      },
     });
   }
 
@@ -96,6 +99,9 @@ export class FeatureRepository {
         userId,
         featureId: feature.id,
         isEnabled: false,
+      },
+      include: {
+        feature: true,
       },
     });
   }
