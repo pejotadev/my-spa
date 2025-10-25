@@ -10,6 +10,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { BookingModule } from './booking/booking.module';
 import { FeaturesModule } from './features/features.module';
+import { TestResolver } from './test-resolver';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { FeaturesModule } from './features/features.module';
     BookingModule,
     FeaturesModule,
   ],
+  providers: [TestResolver],
   // providers: [
   //   {
   //     provide: APP_GUARD,

@@ -73,10 +73,12 @@ type Query {
   getMyConfigurations: String!
   getProviderConfigurations(providerEmail: String!): String!
   getServiceProvidersByCategory(categoryId: String!): String!
+  isFeatureEnabled(featureName: String!): Boolean!
   me: User!
   myCategories: [Category!]!
   myCategoryRelations: [ServiceProviderCategory!]!
   serviceProviders: [User!]!
+  testFeature: String!
   user(id: String!): User!
   users: [User!]!
 }

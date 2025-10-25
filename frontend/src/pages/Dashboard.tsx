@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useGetMeQuery } from '../utils/graphql';
+import { useFeature } from '../hooks/useFeature';
 import Layout from '../components/Layout';
 import CustomerBooking from '../components/CustomerBooking';
 
@@ -11,6 +12,9 @@ const Dashboard: React.FC = () => {
   const { data, loading, error } = useGetMeQuery({
     fetchPolicy: 'network-only' // Always fetch fresh data from server
   });
+  
+  // Check if user has BOOK_SERVICE feature enabled
+  const { isEnabled: hasBookService, loading: featureLoading } = useFeature('BOOK_SERVICE');
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
@@ -46,23 +50,50 @@ const Dashboard: React.FC = () => {
               >
                 Profile
               </button>
-              <button
-                onClick={() => setActiveTab('booking')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'booking'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Book Service
-              </button>
+              {/* Only show Book Service tab if user has the feature enabled */}
+              {hasBookService && (
+                <button
+                  onClick={() => setActiveTab('booking')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'booking'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Book Service
+                </button>
+              )}
             </nav>
           </div>
         )}
 
-        {/* Booking Tab for Customers */}
-        {currentUser?.role === 'CUSTOMER' && activeTab === 'booking' && (
+        {/* Booking Tab for Customers - Only show if user has BOOK_SERVICE feature */}
+        {currentUser?.role === 'CUSTOMER' && activeTab === 'booking' && hasBookService && (
           <CustomerBooking />
+        )}
+
+        {/* Feature not available message for customers without BOOK_SERVICE */}
+        {currentUser?.role === 'CUSTOMER' && !hasBookService && !featureLoading && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-yellow-800">
+                  Booking Service Not Available
+                </h3>
+                <div className="mt-2 text-sm text-yellow-700">
+                  <p>
+                    The booking service is not available for your account. 
+                    Please contact support to enable this feature.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Profile Tab or Default Dashboard */}

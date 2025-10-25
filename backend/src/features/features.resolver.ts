@@ -39,6 +39,7 @@ export class FeaturesResolver {
     @Args('featureName') featureName: string,
     @CurrentUser() user: any,
   ): Promise<boolean> {
+    if (!user) return false;
     return this.featuresService.isFeatureEnabledForUser(user.id, featureName);
   }
 
