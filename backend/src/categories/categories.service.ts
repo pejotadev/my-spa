@@ -1,68 +1,38 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CategoryRepository } from './repositories/category.repository';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { AddCategoryToProviderDto } from './dto/add-category-to-provider.dto';
 import { Category, ServiceProviderCategory } from '@prisma/client';
 
 @Injectable()
 export class CategoriesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {
+    CategoryRepository.setPrisma(prisma);
+  }
 
   async findAll(): Promise<Category[]> {
-    return this.prisma.category.findMany({
-      orderBy: { name: 'asc' },
-    });
+    return CategoryRepository.findAll();
   }
 
   async findOne(id: string): Promise<Category | null> {
-    return this.prisma.category.findUnique({
-      where: { id },
-    });
+    return CategoryRepository.findOne(id);
   }
 
   async findByName(name: string): Promise<Category | null> {
-    return this.prisma.category.findUnique({
-      where: { name },
-    });
+    return CategoryRepository.findByName(name);
   }
 
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
-    return this.prisma.category.create({
-      data: createCategoryDto,
-    });
+    return CategoryRepository.create(createCategoryDto);
   }
 
   async findOrCreateCategory(name: string, description?: string): Promise<Category> {
-    // Primeiro tenta encontrar a categoria existente
-    let category = await this.findByName(name);
-    
-    if (!category) {
-      // Se não existir, cria uma nova
-      category = await this.create({
-        name,
-        description,
-      });
-    }
-    
-    return category;
+    return CategoryRepository.findOrCreate(name, description);
   }
 
   async getServiceProviderCategories(serviceProviderId: string): Promise<ServiceProviderCategory[]> {
-    return this.prisma.serviceProviderCategory.findMany({
-      where: { serviceProviderId },
-      include: {
-        category: true,
-        serviceProvider: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    return CategoryRepository.getServiceProviderCategories(serviceProviderId);
   }
 
   async addCategoryToProvider(
@@ -90,72 +60,17 @@ export class CategoriesService {
     }
 
     // Cria a relação
-    return this.prisma.serviceProviderCategory.create({
-      data: {
-        serviceProviderId,
-        categoryId: category.id,
-      },
-      include: {
-        category: true,
-        serviceProvider: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-      },
-    });
+    return CategoryRepository.addCategoryToProvider(serviceProviderId, category.id);
   }
 
   async removeCategoryFromProvider(
     serviceProviderId: string,
     categoryId: string,
   ): Promise<ServiceProviderCategory> {
-    const relation = await this.prisma.serviceProviderCategory.findUnique({
-      where: {
-        serviceProviderId_categoryId: {
-          serviceProviderId,
-          categoryId,
-        },
-      },
-      include: {
-        category: true,
-        serviceProvider: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-      },
-    });
-
-    if (!relation) {
-      throw new Error('Service provider does not have this category');
-    }
-
-    await this.prisma.serviceProviderCategory.delete({
-      where: {
-        serviceProviderId_categoryId: {
-          serviceProviderId,
-          categoryId,
-        },
-      },
-    });
-
-    return relation;
+    return CategoryRepository.removeCategoryFromProvider(serviceProviderId, categoryId);
   }
 
   async getCategoriesByProvider(serviceProviderId: string): Promise<Category[]> {
-    const relations = await this.prisma.serviceProviderCategory.findMany({
-      where: { serviceProviderId },
-      include: { category: true },
-      orderBy: { category: { name: 'asc' } },
-    });
-
-    return relations.map(relation => relation.category);
+    return CategoryRepository.getCategoriesByProvider(serviceProviderId);
   }
 }

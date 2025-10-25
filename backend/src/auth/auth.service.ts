@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
+import { UserRepository } from '../users/repositories/user.repository';
 import * as bcrypt from 'bcryptjs';
 import { User } from '@prisma/client';
 
@@ -9,12 +10,12 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-  ) {}
+  ) {
+    UserRepository.setPrisma(prisma);
+  }
 
   async validateUser(email: string, password: string): Promise<any> {
-    const user = await this.prisma.user.findUnique({
-      where: { email },
-    });
+    const user = await UserRepository.findByEmail(email);
 
     if (user && await bcrypt.compare(password, user.password)) {
       const { password, ...result } = user;
@@ -43,24 +44,19 @@ export class AuthService {
   async register(email: string, password: string, firstName: string, lastName: string, role: string, createdBy?: string) {
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    const user = await this.prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        firstName,
-        lastName,
-        role: role as any,
-        createdBy,
-      },
+    const user = await UserRepository.create({
+      email,
+      password: hashedPassword,
+      firstName,
+      lastName,
+      role: role as any,
+      createdBy,
     });
 
-    const { password: _, ...result } = user;
-    return result;
+    return user;
   }
 
   async findUserById(id: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
-      where: { id },
-    });
+    return UserRepository.findById(id);
   }
 }
