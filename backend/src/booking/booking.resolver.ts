@@ -45,7 +45,7 @@ export class BookingResolver {
     try {
       // For now, we'll get all configurations since we're using a single grant
       // In a real app, you'd filter by provider
-      const configurations = await this.nylasService.getConfigurations();
+      const configurations = await this.nylasService.getConfigurations(providerEmail);
       return JSON.stringify(configurations);
     } catch (error) {
       throw new Error(`Failed to fetch provider configurations: ${error.message}`);
@@ -58,12 +58,14 @@ export class BookingResolver {
     @Args('configurationId') configurationId: string,
     @Args('startTime') startTime: string,
     @Args('endTime') endTime: string,
+    @Args('serviceProviderEmail') serviceProviderEmail: string,
   ) {
     try {
       const availability = await this.nylasService.getAvailability(
         configurationId,
         startTime,
         endTime,
+        serviceProviderEmail,
       );
       return JSON.stringify(availability);
     } catch (error) {
@@ -79,11 +81,11 @@ export class BookingResolver {
     @Args('endTime') endTime: string,
     @Args('customerEmail') customerEmail: string,
     @Args('customerName') customerName: string,
+    @Args('serviceProviderEmail') serviceProviderEmail: string,
     @CurrentUser() user: any,
   ) {
     try {
-      // Use the logged-in user's email as the service provider
-      const serviceProviderEmail = user.email;
+      // The customer (logged-in user) is booking with a specific service provider
 
       const bookingData = {
         configuration_id: configurationId,

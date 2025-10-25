@@ -17,6 +17,9 @@ export class User {
   @Field()
   role: string;
 
+  @Field({ nullable: true })
+  nylasGrantId?: string;
+
   @Field()
   createdAt: Date;
 

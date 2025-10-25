@@ -16,7 +16,7 @@ export class SchedulerResolver {
   @Query(() => String, { name: 'getMyConfigurations' })
   async getMyConfigurations(@CurrentUser() user: any) {
     try {
-      const configurations = await this.nylasService.getConfigurations();
+      const configurations = await this.nylasService.getConfigurations(user.email);
       return JSON.stringify(configurations);
     } catch (error) {
       throw new Error(`Failed to fetch configurations: ${error.message}`);
@@ -29,7 +29,7 @@ export class SchedulerResolver {
     @CurrentUser() user: any
   ) {
     try {
-      const configuration = await this.nylasService.getConfiguration(configurationId);
+      const configuration = await this.nylasService.getConfiguration(configurationId, user.email);
       return JSON.stringify(configuration);
     } catch (error) {
       throw new Error(`Failed to fetch configuration: ${error.message}`);
@@ -44,7 +44,7 @@ export class SchedulerResolver {
   ) {
     try {
       const parsedData = JSON.parse(configurationData);
-      const configuration = await this.nylasService.createConfiguration(parsedData);
+      const configuration = await this.nylasService.createConfiguration(parsedData, user.email);
       return JSON.stringify(configuration);
     } catch (error) {
       throw new Error(`Failed to create configuration: ${error.message}`);
@@ -59,7 +59,7 @@ export class SchedulerResolver {
   ) {
     try {
       const parsedData = JSON.parse(configurationData);
-      const configuration = await this.nylasService.updateConfiguration(configurationId, parsedData);
+      const configuration = await this.nylasService.updateConfiguration(configurationId, parsedData, user.email);
       return JSON.stringify(configuration);
     } catch (error) {
       throw new Error(`Failed to update configuration: ${error.message}`);
@@ -72,7 +72,7 @@ export class SchedulerResolver {
     @CurrentUser() user: any
   ) {
     try {
-      await this.nylasService.deleteConfiguration(configurationId);
+      await this.nylasService.deleteConfiguration(configurationId, user.email);
       return true;
     } catch (error) {
       throw new Error(`Failed to delete configuration: ${error.message}`);
@@ -88,7 +88,7 @@ export class SchedulerResolver {
     @Args('pageToken', { nullable: true }) pageToken?: string
   ) {
     try {
-      const bookings = await this.nylasService.getBookings(configurationId, limit, pageToken);
+      const bookings = await this.nylasService.getBookings(configurationId, limit, pageToken, user.email);
       return JSON.stringify(bookings);
     } catch (error) {
       throw new Error(`Failed to fetch bookings: ${error.message}`);
@@ -102,7 +102,7 @@ export class SchedulerResolver {
     @CurrentUser() user: any
   ) {
     try {
-      const booking = await this.nylasService.getBooking(bookingId, configurationId);
+      const booking = await this.nylasService.getBooking(bookingId, configurationId, user.email);
       return JSON.stringify(booking);
     } catch (error) {
       throw new Error(`Failed to fetch booking: ${error.message}`);
@@ -119,7 +119,7 @@ export class SchedulerResolver {
   ) {
     try {
       const parsedData = JSON.parse(bookingData);
-      const booking = await this.nylasService.updateBooking(bookingId, configurationId, parsedData);
+      const booking = await this.nylasService.updateBooking(bookingId, configurationId, parsedData, user.email);
       return JSON.stringify(booking);
     } catch (error) {
       throw new Error(`Failed to update booking: ${error.message}`);
@@ -133,7 +133,7 @@ export class SchedulerResolver {
     @CurrentUser() user: any
   ) {
     try {
-      const booking = await this.nylasService.confirmBooking(bookingId, configurationId);
+      const booking = await this.nylasService.confirmBooking(bookingId, configurationId, user.email);
       return JSON.stringify(booking);
     } catch (error) {
       throw new Error(`Failed to confirm booking: ${error.message}`);
@@ -147,7 +147,7 @@ export class SchedulerResolver {
     @CurrentUser() user: any
   ) {
     try {
-      const booking = await this.nylasService.cancelBooking(bookingId, configurationId);
+      const booking = await this.nylasService.cancelBooking(bookingId, configurationId, user.email);
       return JSON.stringify(booking);
     } catch (error) {
       throw new Error(`Failed to cancel booking: ${error.message}`);
@@ -161,7 +161,7 @@ export class SchedulerResolver {
     @CurrentUser() user: any
   ) {
     try {
-      await this.nylasService.deleteBooking(bookingId, configurationId);
+      await this.nylasService.deleteBooking(bookingId, configurationId, user.email);
       return true;
     } catch (error) {
       throw new Error(`Failed to delete booking: ${error.message}`);
@@ -177,7 +177,7 @@ export class SchedulerResolver {
     @CurrentUser() user: any
   ) {
     try {
-      const availability = await this.nylasService.getAvailability(configurationId, startTime, endTime);
+      const availability = await this.nylasService.getAvailability(configurationId, startTime, endTime, user.email);
       return JSON.stringify(availability);
     } catch (error) {
       throw new Error(`Failed to fetch availability: ${error.message}`);

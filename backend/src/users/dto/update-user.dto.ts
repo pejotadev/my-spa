@@ -29,4 +29,9 @@ export class UpdateUserDto {
   @IsString()
   @IsIn(['ADMIN', 'CUSTOMER', 'SERVICE_PROVIDER'])
   role?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  nylasGrantId?: string;
 }

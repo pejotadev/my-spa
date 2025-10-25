@@ -29,6 +29,7 @@ input CreateUserDto {
   email: String!
   firstName: String!
   lastName: String!
+  nylasGrantId: String
   password: String!
   role: String!
 }
@@ -47,7 +48,7 @@ type Mutation {
   addCategoryToMe(addCategoryDto: AddCategoryToProviderDto!): ServiceProviderCategory!
   cancelBooking(bookingId: String!, configurationId: String!): String!
   confirmBooking(bookingId: String!, configurationId: String!): String!
-  createBooking(configurationId: String!, customerEmail: String!, customerName: String!, endTime: String!, startTime: String!): String!
+  createBooking(configurationId: String!, customerEmail: String!, customerName: String!, endTime: String!, serviceProviderEmail: String!, startTime: String!): String!
   createCategory(createCategoryDto: CreateCategoryDto!): Category!
   createConfiguration(configurationData: String!): String!
   createUser(createUserDto: CreateUserDto!): User!
@@ -65,7 +66,7 @@ type Query {
   categories: [Category!]!
   category(id: String!): Category!
   customers: [User!]!
-  getAvailability(configurationId: String!, endTime: String!, startTime: String!): String!
+  getAvailability(configurationId: String!, endTime: String!, serviceProviderEmail: String!, startTime: String!): String!
   getBooking(bookingId: String!, configurationId: String!): String!
   getConfiguration(configurationId: String!): String!
   getMyBookings(configurationId: String!, limit: Float! = 20, pageToken: String): String!
@@ -93,6 +94,7 @@ input UpdateUserDto {
   email: String
   firstName: String
   lastName: String
+  nylasGrantId: String
   password: String
   role: String
 }
@@ -104,6 +106,7 @@ type User {
   firstName: String!
   id: ID!
   lastName: String!
+  nylasGrantId: String
   role: String!
   updatedAt: DateTime!
 }

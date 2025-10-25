@@ -7,8 +7,8 @@ export class NylasService {
   private readonly logger = new Logger(NylasService.name);
   private readonly httpClient: AxiosInstance;
   private readonly baseUrl = 'https://api.us.nylas.com';
-  private readonly apiKey = 'nyk_v0_g8uBlVOoLDEORzriZ7lKNQRrmTTEyLWiajeHcw62nY87ZIfuNLV2AiRkZagSaGxL';
-  private readonly grantId = '496dd5ae-ed2e-46ce-9735-acbe543fdadd';
+  private readonly apiKey = 'nyk_v0_MYuiWN0RDT5W4Bdo78BjlzjXRaznYtIDh3ndBbMQloBBQIpekySOsHTDySAahp5p';
+  private readonly defaultGrantId = '496dd5ae-ed2e-46ce-9735-acbe543fdadd'; // fallback grant ID
 
   constructor(private prisma: PrismaService) {
     this.httpClient = axios.create({
@@ -22,9 +22,10 @@ export class NylasService {
   }
 
   // Configuration Management
-  async getConfigurations() {
+  async getConfigurations(userEmail?: string) {
     try {
-      const response = await this.httpClient.get(`/v3/grants/${this.grantId}/scheduling/configurations`);
+      const grantId = await this.getGrantIdForUser(userEmail);
+      const response = await this.httpClient.get(`/v3/grants/${grantId}/scheduling/configurations`);
       return response.data;
     } catch (error) {
       this.logger.error('Error fetching configurations:', error.response?.data || error.message);
@@ -32,9 +33,10 @@ export class NylasService {
     }
   }
 
-  async getConfiguration(configurationId: string) {
+  async getConfiguration(configurationId: string, userEmail?: string) {
     try {
-      const response = await this.httpClient.get(`/v3/grants/${this.grantId}/scheduling/configurations/${configurationId}`);
+      const grantId = await this.getGrantIdForUser(userEmail);
+      const response = await this.httpClient.get(`/v3/grants/${grantId}/scheduling/configurations/${configurationId}`);
       return response.data;
     } catch (error) {
       this.logger.error('Error fetching configuration:', error.response?.data || error.message);
@@ -42,9 +44,10 @@ export class NylasService {
     }
   }
 
-  async createConfiguration(configurationData: any) {
+  async createConfiguration(configurationData: any, userEmail?: string) {
     try {
-      const response = await this.httpClient.post(`/v3/grants/${this.grantId}/scheduling/configurations`, configurationData);
+      const grantId = await this.getGrantIdForUser(userEmail);
+      const response = await this.httpClient.post(`/v3/grants/${grantId}/scheduling/configurations`, configurationData);
       return response.data;
     } catch (error) {
       this.logger.error('Error creating configuration:', error.response?.data || error.message);
@@ -52,9 +55,10 @@ export class NylasService {
     }
   }
 
-  async updateConfiguration(configurationId: string, configurationData: any) {
+  async updateConfiguration(configurationId: string, configurationData: any, userEmail?: string) {
     try {
-      const response = await this.httpClient.put(`/v3/grants/${this.grantId}/scheduling/configurations/${configurationId}`, configurationData);
+      const grantId = await this.getGrantIdForUser(userEmail);
+      const response = await this.httpClient.put(`/v3/grants/${grantId}/scheduling/configurations/${configurationId}`, configurationData);
       return response.data;
     } catch (error) {
       this.logger.error('Error updating configuration:', error.response?.data || error.message);
@@ -62,9 +66,10 @@ export class NylasService {
     }
   }
 
-  async deleteConfiguration(configurationId: string) {
+  async deleteConfiguration(configurationId: string, userEmail?: string) {
     try {
-      const response = await this.httpClient.delete(`/v3/grants/${this.grantId}/scheduling/configurations/${configurationId}`);
+      const grantId = await this.getGrantIdForUser(userEmail);
+      const response = await this.httpClient.delete(`/v3/grants/${grantId}/scheduling/configurations/${configurationId}`);
       return response.data;
     } catch (error) {
       this.logger.error('Error deleting configuration:', error.response?.data || error.message);
@@ -73,7 +78,7 @@ export class NylasService {
   }
 
   // Booking Management
-  async getBookings(configurationId: string, limit = 20, pageToken?: string) {
+  async getBookings(configurationId: string, limit = 20, pageToken?: string, userEmail?: string) {
     try {
       const params = new URLSearchParams({
         configuration_id: configurationId,
@@ -92,7 +97,7 @@ export class NylasService {
     }
   }
 
-  async getBooking(bookingId: string, configurationId: string) {
+  async getBooking(bookingId: string, configurationId: string, userEmail?: string) {
     try {
       const response = await this.httpClient.get(`/v3/scheduling/bookings/${bookingId}?configuration_id=${configurationId}`);
       return response.data;
@@ -102,7 +107,7 @@ export class NylasService {
     }
   }
 
-  async updateBooking(bookingId: string, configurationId: string, bookingData: any) {
+  async updateBooking(bookingId: string, configurationId: string, bookingData: any, userEmail?: string) {
     try {
       const response = await this.httpClient.put(`/v3/scheduling/bookings/${bookingId}?configuration_id=${configurationId}`, bookingData);
       return response.data;
@@ -112,7 +117,7 @@ export class NylasService {
     }
   }
 
-  async confirmBooking(bookingId: string, configurationId: string) {
+  async confirmBooking(bookingId: string, configurationId: string, userEmail?: string) {
     try {
       const response = await this.httpClient.post(`/v3/scheduling/bookings/${bookingId}/confirm?configuration_id=${configurationId}`);
       return response.data;
@@ -122,7 +127,7 @@ export class NylasService {
     }
   }
 
-  async cancelBooking(bookingId: string, configurationId: string) {
+  async cancelBooking(bookingId: string, configurationId: string, userEmail?: string) {
     try {
       const response = await this.httpClient.post(`/v3/scheduling/bookings/${bookingId}/cancel?configuration_id=${configurationId}`);
       return response.data;
@@ -132,7 +137,7 @@ export class NylasService {
     }
   }
 
-  async deleteBooking(bookingId: string, configurationId: string) {
+  async deleteBooking(bookingId: string, configurationId: string, userEmail?: string) {
     try {
       const response = await this.httpClient.delete(`/v3/scheduling/bookings/${bookingId}?configuration_id=${configurationId}`);
       return response.data;
@@ -143,7 +148,7 @@ export class NylasService {
   }
 
   // Availability Management
-  async getAvailability(configurationId: string, startTime: string, endTime: string) {
+  async getAvailability(configurationId: string, startTime: string, endTime: string, userEmail?: string) {
     try {
       // Convert ISO strings to Unix timestamps
       const startTimestamp = Math.floor(new Date(startTime).getTime() / 1000);
@@ -161,6 +166,17 @@ export class NylasService {
       this.logger.error('Error fetching availability:', error.response?.data || error.message);
       throw error;
     }
+  }
+
+  // Helper method to get grant ID for a user (with fallback)
+  async getGrantIdForUser(userEmail?: string): Promise<string> {
+    if (userEmail) {
+      const userGrantId = await this.getUserGrantId(userEmail);
+      if (userGrantId) {
+        return userGrantId;
+      }
+    }
+    return this.defaultGrantId;
   }
 
   // Helper method to get grant ID for a user
@@ -181,13 +197,7 @@ export class NylasService {
   async createBooking(bookingData: any, serviceProviderEmail?: string) {
     try {
       // Get the grant ID for the service provider
-      let grantId = this.grantId; // fallback to default
-      if (serviceProviderEmail) {
-        const userGrantId = await this.getUserGrantId(serviceProviderEmail);
-        if (userGrantId) {
-          grantId = userGrantId;
-        }
-      }
+      const grantId = await this.getGrantIdForUser(serviceProviderEmail);
 
       // Create a real calendar event using Nylas API
       const eventData = {

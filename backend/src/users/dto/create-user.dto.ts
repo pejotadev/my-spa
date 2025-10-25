@@ -1,5 +1,5 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsEmail, IsIn, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsIn, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 
 @InputType()
 export class CreateUserDto {
@@ -26,4 +26,9 @@ export class CreateUserDto {
   @IsString()
   @IsIn(['ADMIN', 'CUSTOMER', 'SERVICE_PROVIDER'])
   role: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  nylasGrantId?: string;
 }

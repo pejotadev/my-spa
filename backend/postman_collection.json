@@ -1,0 +1,187 @@
+{
+  "info": {
+    "name": "my-spa Backend (GraphQL)",
+    "_postman_id": "8f7f6b34-2e5a-4d6f-9f6f-collection",
+    "description": "Postman collection for the my-spa NestJS GraphQL backend.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth / Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/graphql",
+          "host": ["{{baseUrl}}"],
+          "path": ["graphql"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"operationName\": \"Login\",\n  \"variables\": {\n    \"loginDto\": {\n      \"email\": \"{{loginEmail}}\",\n      \"password\": \"{{loginPassword}}\"\n    }\n  },\n  \"query\": \"mutation Login($loginDto: LoginDto!) {\\n  login(loginDto: $loginDto) {\\n    access_token\\n    user {\\n      id\\n      email\\n      firstName\\n      lastName\\n      role\\n    }\\n  }\\n}\"\n}"
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "const token = json && json.data && json.data.login && json.data.login.access_token;",
+              "if (token) { pm.environment.set('token', token); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "User / Me",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/graphql",
+          "host": ["{{baseUrl}}"],
+          "path": ["graphql"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"operationName\": \"GetMe\",\n  \"variables\": {},\n  \"query\": \"query GetMe {\\n  me {\\n    id\\n    email\\n    firstName\\n    lastName\\n    role\\n  }\\n}\"\n}"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Categories / List",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"operationName\": \"GetCategories\",\n  \"variables\": {},\n  \"query\": \"query GetCategories {\\n  categories {\\n    id\\n    name\\n    description\\n  }\\n}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Booking / Get Service Providers by Category",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"operationName\": \"GetServiceProvidersByCategory\",\n  \"variables\": { \"categoryId\": \"{{categoryId}}\" },\n  \"query\": \"query GetServiceProvidersByCategory($categoryId: String!) {\\n  getServiceProvidersByCategory(categoryId: $categoryId)\\n}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Booking / Get Provider Configurations",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"operationName\": \"GetProviderConfigurations\",\n  \"variables\": { \"providerEmail\": \"{{providerEmail}}\" },\n  \"query\": \"query GetProviderConfigurations($providerEmail: String!) {\\n  getProviderConfigurations(providerEmail: $providerEmail)\\n}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Booking / Get Availability",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"operationName\": \"GetAvailability\",\n  \"variables\": { \"configurationId\": \"{{configurationId}}\", \"startTime\": \"{{startTime}}\", \"endTime\": \"{{endTime}}\" },\n  \"query\": \"query GetAvailability($configurationId: String!, $startTime: String!, $endTime: String!) {\\n  getAvailability(configurationId: $configurationId, startTime: $startTime, endTime: $endTime)\\n}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Booking / Create Booking",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"operationName\": \"CreateBooking\",\n  \"variables\": {\n    \"configurationId\": \"{{configurationId}}\",\n    \"startTime\": \"{{startTime}}\",\n    \"endTime\": \"{{endTime}}\",\n    \"customerEmail\": \"{{customerEmail}}\",\n    \"customerName\": \"{{customerName}}\"\n  },\n  \"query\": \"mutation CreateBooking($configurationId: String!, $startTime: String!, $endTime: String!, $customerEmail: String!, $customerName: String!) {\\n  createBooking(configurationId: $configurationId, startTime: $startTime, endTime: $endTime, customerEmail: $customerEmail, customerName: $customerName)\\n}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Scheduler / Get My Configurations",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"operationName\": \"GetMyConfigurations\",\n  \"variables\": {},\n  \"query\": \"query GetMyConfigurations {\\n  getMyConfigurations\\n}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Scheduler / Create Configuration",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"operationName\": \"CreateConfiguration\",\n  \"variables\": { \"configurationData\": \"{{configurationData}}\" },\n  \"query\": \"mutation CreateConfiguration($configurationData: String!) {\\n  createConfiguration(configurationData: $configurationData)\\n}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Scheduler / Delete Configuration",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"operationName\": \"DeleteConfiguration\",\n  \"variables\": { \"configurationId\": \"{{configurationId}}\" },\n  \"query\": \"mutation DeleteConfiguration($configurationId: String!) {\\n  deleteConfiguration(configurationId: $configurationId)\\n}\"\n}"
+        }
+      }
+    }
+  ],
+  "event": [],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000" },
+    { "key": "loginEmail", "value": "pejotabh@gmail.com" },
+    { "key": "loginPassword", "value": "password123" },
+    { "key": "token", "value": "" },
+    { "key": "categoryId", "value": "" },
+    { "key": "providerEmail", "value": "" },
+    { "key": "configurationId", "value": "" },
+    { "key": "startTime", "value": "2025-10-21T14:00:00.000Z" },
+    { "key": "endTime", "value": "2025-10-21T14:30:00.000Z" },
+    { "key": "customerEmail", "value": "customer@example.com" },
+    { "key": "customerName", "value": "Customer Name" },
+    { "key": "configurationData", "value": "{\\\"name\\\":\\\"Session test\\\",\\\"description\\\":\\\"Scheduler config test\\\",\\\"participants\\\":[{\\\"email\\\":\\\"pejotabh@gmail.com\\\",\\\"name\\\":\\\"Service Provider\\\",\\\"is_organizer\\\":true,\\\"availability\\\":{\\\"calendar_ids\\\":[\\\"primary\\\"],\\\"open_hours\\\":[{\\\"days\\\":[1,2,3,4,5],\\\"start\\\":\\\"09:00\\\",\\\"end\\\":\\\"18:00\\\",\\\"exdates\\\":[]}]} ,\\\"booking\\\":{\\\"calendar_id\\\":\\\"primary\\\"}}],\\\"availability\\\":{\\\"duration_minutes\\\":30,\\\"interval_minutes\\\":15,\\\"round_to\\\":15,\\\"availability_rules\\\":{\\\"availability_method\\\":\\\"collective\\\",\\\"buffer\\\":{\\\"before\\\":0,\\\"after\\\":0},\\\"default_open_hours\\\":[{\\\"days\\\":[1,2,3,4,5],\\\"start\\\":\\\"09:00\\\",\\\"end\\\":\\\"18:00\\\",\\\"exdates\\\":[ ]}]}}}" }
+  ]
+}
+
+
+
