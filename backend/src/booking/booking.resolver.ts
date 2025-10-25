@@ -5,6 +5,7 @@ import { SimpleJwtGuard } from '../auth/simple-jwt.guard';
 import { Public } from '../auth/public.decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { CurrentUser } from '../auth/current-user.decorator';
+import { FeatureGuard, RequireFeature } from '../features/guards/feature.guard';
 
 @Resolver()
 export class BookingResolver {
@@ -72,7 +73,8 @@ export class BookingResolver {
   }
 
   @Mutation(() => String, { name: 'createBooking' })
-  @UseGuards(SimpleJwtGuard)
+  @UseGuards(SimpleJwtGuard, FeatureGuard)
+  @RequireFeature('BOOK_SERVICE')
   async createBooking(
     @Args('configurationId') configurationId: string,
     @Args('startTime') startTime: string,

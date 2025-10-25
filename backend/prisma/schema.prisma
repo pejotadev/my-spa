@@ -18,12 +18,16 @@ model User {
   lastName  String
   role      String   @default("CUSTOMER") // ADMIN, CUSTOMER, SERVICE_PROVIDER
   nylasGrantId String? // Nylas Grant ID for service providers
+  score     Int      @default(0) // User score for feature access
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   createdBy String?  // ID of the admin who created this user
 
   // Relacionamento com categorias (apenas para service providers)
   serviceProviderCategories ServiceProviderCategory[]
+  
+  // Relacionamento com features
+  userFeatures UserFeature[]
 
   @@map("users")
 }
@@ -54,4 +58,33 @@ model ServiceProviderCategory {
   // Índice único para evitar duplicatas
   @@unique([serviceProviderId, categoryId])
   @@map("service_provider_categories")
+}
+
+model Feature {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  score       Int      @default(0) // Score mínimo necessário para habilitar
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userFeatures UserFeature[]
+
+  @@map("features")
+}
+
+model UserFeature {
+  id        String   @id @default(cuid())
+  userId    String
+  featureId  String
+  isEnabled Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feature Feature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, featureId])
+  @@map("user_features")
 }

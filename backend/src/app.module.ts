@@ -9,6 +9,7 @@ import { UsersModule } from './users/users.module';
 import { CategoriesModule } from './categories/categories.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { BookingModule } from './booking/booking.module';
+import { FeaturesModule } from './features/features.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { BookingModule } from './booking/booking.module';
     CategoriesModule,
     SchedulerModule,
     BookingModule,
+    FeaturesModule,
   ],
   // providers: [
   //   {
