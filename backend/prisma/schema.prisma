@@ -106,6 +106,7 @@ model Environment {
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   lights Light[]
+  plants Plant[]
 
   @@map("environments")
 }
@@ -121,4 +122,44 @@ model Light {
   environment Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
 
   @@map("lights")
+}
+
+model Genetics {
+  id          String   @id @default(cuid())
+  name        String   @unique // Nome da genética (ex: "White Widow", "Blue Dream")
+  description String?  // Descrição da genética
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  plants Plant[]
+
+  @@map("genetics")
+}
+
+model Plant {
+  id            String   @id @default(cuid())
+  code          String   @unique // Código único da planta (ex: "A001", "B002")
+  description   String?  // Descrição da planta
+  geneticsId    String   // Referência à genética (nome da planta)
+  environmentId String   // Ambiente onde está a planta
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  genetics   Genetics     @relation(fields: [geneticsId], references: [id], onDelete: Cascade)
+  environment Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+  history    PlantHistory[]
+
+  @@map("plants")
+}
+
+model PlantHistory {
+  id        String   @id @default(cuid())
+  plantId   String
+  stage     String   // germinacao, muda_clone, vegetativa, florativa
+  notes     String?  // Observações sobre o estado
+  createdAt DateTime @default(now())
+
+  plant Plant @relation(fields: [plantId], references: [id], onDelete: Cascade)
+
+  @@map("plant_history")
 }

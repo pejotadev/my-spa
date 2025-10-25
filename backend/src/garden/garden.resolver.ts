@@ -3,10 +3,18 @@ import { UseGuards } from '@nestjs/common';
 import { GardenService } from './garden.service';
 import { Environment } from './entities/environment.entity';
 import { Light } from './entities/light.entity';
+import { Plant } from './entities/plant.entity';
+import { Genetics } from './entities/genetics.entity';
+import { PlantHistory } from './entities/plant-history.entity';
 import { CreateEnvironmentDto } from './dto/create-environment.dto';
 import { UpdateEnvironmentDto } from './dto/update-environment.dto';
 import { CreateLightDto } from './dto/create-light.dto';
 import { UpdateLightDto } from './dto/update-light.dto';
+import { CreatePlantDto } from './dto/create-plant.dto';
+import { UpdatePlantDto } from './dto/update-plant.dto';
+import { CreateGeneticsDto } from './dto/create-genetics.dto';
+import { UpdateGeneticsDto } from './dto/update-genetics.dto';
+import { CreatePlantHistoryDto } from './dto/create-plant-history.dto';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
@@ -91,5 +99,106 @@ export class GardenResolver {
     @CurrentUser() user: any
   ): Promise<Light> {
     return this.gardenService.deleteLight(lightId, environmentId, user.userId);
+  }
+
+  // Genetics Management
+  @Query(() => [Genetics])
+  async getAllGenetics(): Promise<Genetics[]> {
+    return this.gardenService.getAllGenetics();
+  }
+
+  @Query(() => Genetics)
+  async getGeneticsById(
+    @Args('id', { type: () => ID }) id: string
+  ): Promise<Genetics> {
+    return this.gardenService.getGeneticsById(id);
+  }
+
+  @Mutation(() => Genetics)
+  async createGenetics(
+    @Args('input') input: CreateGeneticsDto
+  ): Promise<Genetics> {
+    return this.gardenService.createGenetics(input);
+  }
+
+  @Mutation(() => Genetics)
+  async updateGenetics(
+    @Args('id', { type: () => ID }) id: string,
+    @Args('input') input: UpdateGeneticsDto
+  ): Promise<Genetics> {
+    return this.gardenService.updateGenetics(id, input);
+  }
+
+  @Mutation(() => Genetics)
+  async deleteGenetics(
+    @Args('id', { type: () => ID }) id: string
+  ): Promise<Genetics> {
+    return this.gardenService.deleteGenetics(id);
+  }
+
+  // Plant Management
+  @Query(() => [Plant])
+  async getPlantsByEnvironment(
+    @Args('environmentId', { type: () => ID }) environmentId: string,
+    @CurrentUser() user: any
+  ): Promise<Plant[]> {
+    return this.gardenService.getPlantsByEnvironment(environmentId, user.userId);
+  }
+
+  @Query(() => Plant)
+  async getPlantById(
+    @Args('plantId', { type: () => ID }) plantId: string,
+    @Args('environmentId', { type: () => ID }) environmentId: string,
+    @CurrentUser() user: any
+  ): Promise<Plant> {
+    return this.gardenService.getPlantById(plantId, environmentId, user.userId);
+  }
+
+  @Mutation(() => Plant)
+  async createPlant(
+    @Args('environmentId', { type: () => ID }) environmentId: string,
+    @Args('input') input: CreatePlantDto,
+    @CurrentUser() user: any
+  ): Promise<Plant> {
+    return this.gardenService.createPlant(environmentId, input, user.userId);
+  }
+
+  @Mutation(() => Plant)
+  async updatePlant(
+    @Args('plantId', { type: () => ID }) plantId: string,
+    @Args('environmentId', { type: () => ID }) environmentId: string,
+    @Args('input') input: UpdatePlantDto,
+    @CurrentUser() user: any
+  ): Promise<Plant> {
+    return this.gardenService.updatePlant(plantId, environmentId, input, user.userId);
+  }
+
+  @Mutation(() => Plant)
+  async deletePlant(
+    @Args('plantId', { type: () => ID }) plantId: string,
+    @Args('environmentId', { type: () => ID }) environmentId: string,
+    @CurrentUser() user: any
+  ): Promise<Plant> {
+    return this.gardenService.deletePlant(plantId, environmentId, user.userId);
+  }
+
+  // Plant History Management
+  @Query(() => [PlantHistory])
+  async getPlantHistory(
+    @Args('plantId', { type: () => ID }) plantId: string,
+    @Args('environmentId', { type: () => ID }) environmentId: string,
+    @CurrentUser() user: any
+  ): Promise<PlantHistory[]> {
+    return this.gardenService.getPlantHistory(plantId, environmentId, user.userId);
+  }
+
+  @Mutation(() => PlantHistory)
+  async createPlantHistory(
+    @Args('plantId', { type: () => ID }) plantId: string,
+    @Args('environmentId', { type: () => ID }) environmentId: string,
+    @Args('input') input: CreatePlantHistoryDto,
+    @CurrentUser() user: any
+  ): Promise<PlantHistory> {
+    return this.gardenService.createPlantHistory(plantId, environmentId, input, user.userId);
   }
 }

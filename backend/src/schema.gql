@@ -33,9 +33,24 @@ input CreateEnvironmentDto {
   width: Float!
 }
 
+input CreateGeneticsDto {
+  description: String
+  name: String!
+}
+
 input CreateLightDto {
   type: String!
   watts: Float
+}
+
+input CreatePlantDto {
+  description: String
+  geneticsId: ID!
+}
+
+input CreatePlantHistoryDto {
+  notes: String
+  stage: String!
 }
 
 input CreateUserDto {
@@ -64,6 +79,14 @@ type Environment {
   width: Float!
 }
 
+type Genetics {
+  createdAt: DateTime!
+  description: String
+  id: ID!
+  name: String!
+  updatedAt: DateTime!
+}
+
 type Light {
   createdAt: DateTime!
   environmentId: ID!
@@ -86,34 +109,65 @@ type Mutation {
   createCategory(createCategoryDto: CreateCategoryDto!): Category!
   createConfiguration(configurationData: String!): String!
   createEnvironment(input: CreateEnvironmentDto!): Environment!
+  createGenetics(input: CreateGeneticsDto!): Genetics!
   createLight(environmentId: ID!, input: CreateLightDto!): Light!
+  createPlant(environmentId: ID!, input: CreatePlantDto!): Plant!
+  createPlantHistory(environmentId: ID!, input: CreatePlantHistoryDto!, plantId: ID!): PlantHistory!
   createUser(createUserDto: CreateUserDto!): User!
   deleteBooking(bookingId: String!, configurationId: String!): Boolean!
   deleteConfiguration(configurationId: String!): Boolean!
   deleteEnvironment(id: ID!): Environment!
+  deleteGenetics(id: ID!): Genetics!
   deleteLight(environmentId: ID!, lightId: ID!): Light!
+  deletePlant(environmentId: ID!, plantId: ID!): Plant!
   login(loginDto: LoginDto!): AuthPayload!
   removeCategoryFromMe(categoryId: String!): ServiceProviderCategory!
   removeUser(id: String!): User!
   updateBooking(bookingData: String!, bookingId: String!, configurationId: String!): String!
   updateConfiguration(configurationData: String!, configurationId: String!): String!
   updateEnvironment(id: ID!, input: UpdateEnvironmentDto!): Environment!
+  updateGenetics(id: ID!, input: UpdateGeneticsDto!): Genetics!
   updateLight(environmentId: ID!, input: UpdateLightDto!, lightId: ID!): Light!
+  updatePlant(environmentId: ID!, input: UpdatePlantDto!, plantId: ID!): Plant!
   updateUser(id: String!, updateUserDto: UpdateUserDto!): User!
+}
+
+type Plant {
+  code: String!
+  createdAt: DateTime!
+  description: String
+  environmentId: ID!
+  genetics: Genetics
+  geneticsId: ID!
+  id: ID!
+  updatedAt: DateTime!
+}
+
+type PlantHistory {
+  createdAt: DateTime!
+  id: ID!
+  notes: String
+  plantId: ID!
+  stage: String!
 }
 
 type Query {
   categories: [Category!]!
   category(id: String!): Category!
   customers: [User!]!
+  getAllGenetics: [Genetics!]!
   getAvailability(configurationId: String!, endTime: String!, serviceProviderEmail: String!, startTime: String!): String!
   getBooking(bookingId: String!, configurationId: String!): String!
   getConfiguration(configurationId: String!): String!
   getEnvironment(id: ID!): Environment!
+  getGeneticsById(id: ID!): Genetics!
   getLightsByEnvironment(environmentId: ID!): [Light!]!
   getMyBookings(configurationId: String!, limit: Float! = 20, pageToken: String): String!
   getMyConfigurations: String!
   getMyEnvironments: [Environment!]!
+  getPlantById(environmentId: ID!, plantId: ID!): Plant!
+  getPlantHistory(environmentId: ID!, plantId: ID!): [PlantHistory!]!
+  getPlantsByEnvironment(environmentId: ID!): [Plant!]!
   getProviderConfigurations(providerEmail: String!): String!
   getServiceProvidersByCategory(categoryId: String!): String!
   isFeatureEnabled(featureName: String!): Boolean!
@@ -143,9 +197,19 @@ input UpdateEnvironmentDto {
   width: Float
 }
 
+input UpdateGeneticsDto {
+  description: String
+  name: String
+}
+
 input UpdateLightDto {
   type: String
   watts: Float
+}
+
+input UpdatePlantDto {
+  description: String
+  geneticsId: ID
 }
 
 input UpdateUserDto {

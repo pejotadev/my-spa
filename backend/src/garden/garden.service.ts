@@ -3,10 +3,18 @@ import { PrismaService } from '../prisma/prisma.service';
 import { EnvironmentRepository } from './repositories/environment.repository';
 import { Environment } from './entities/environment.entity';
 import { Light } from './entities/light.entity';
+import { Plant } from './entities/plant.entity';
+import { Genetics } from './entities/genetics.entity';
+import { PlantHistory } from './entities/plant-history.entity';
 import { CreateEnvironmentDto } from './dto/create-environment.dto';
 import { UpdateEnvironmentDto } from './dto/update-environment.dto';
 import { CreateLightDto } from './dto/create-light.dto';
 import { UpdateLightDto } from './dto/update-light.dto';
+import { CreatePlantDto } from './dto/create-plant.dto';
+import { UpdatePlantDto } from './dto/update-plant.dto';
+import { CreateGeneticsDto } from './dto/create-genetics.dto';
+import { UpdateGeneticsDto } from './dto/update-genetics.dto';
+import { CreatePlantHistoryDto } from './dto/create-plant-history.dto';
 
 @Injectable()
 export class GardenService {
@@ -119,5 +127,159 @@ export class GardenService {
     }
 
     return EnvironmentRepository.deleteLight(lightId);
+  }
+
+  // Genetics Management
+  async createGenetics(data: CreateGeneticsDto): Promise<Genetics> {
+    return EnvironmentRepository.createGenetics(data);
+  }
+
+  async getAllGenetics(): Promise<Genetics[]> {
+    return EnvironmentRepository.getAllGenetics();
+  }
+
+  async getGeneticsById(id: string): Promise<Genetics> {
+    const genetics = await EnvironmentRepository.getGeneticsById(id);
+    if (!genetics) {
+      throw new NotFoundException('Genetics not found');
+    }
+    return genetics;
+  }
+
+  async updateGenetics(id: string, data: UpdateGeneticsDto): Promise<Genetics> {
+    const genetics = await EnvironmentRepository.getGeneticsById(id);
+    if (!genetics) {
+      throw new NotFoundException('Genetics not found');
+    }
+    return EnvironmentRepository.updateGenetics(id, data);
+  }
+
+  async deleteGenetics(id: string): Promise<Genetics> {
+    const genetics = await EnvironmentRepository.getGeneticsById(id);
+    if (!genetics) {
+      throw new NotFoundException('Genetics not found');
+    }
+    return EnvironmentRepository.deleteGenetics(id);
+  }
+
+  // Plant Management
+  async createPlant(environmentId: string, data: CreatePlantDto, userId: string): Promise<Plant> {
+    // Verificar se o environment pertence ao usuário
+    const environment = await EnvironmentRepository.getEnvironmentByIdAndUser(environmentId, userId);
+    if (!environment) {
+      throw new NotFoundException('Environment not found');
+    }
+
+    // Verificar se a genética existe
+    const genetics = await EnvironmentRepository.getGeneticsById(data.geneticsId);
+    if (!genetics) {
+      throw new NotFoundException('Genetics not found');
+    }
+
+    return EnvironmentRepository.createPlant({
+      ...data,
+      environmentId,
+    });
+  }
+
+  async getPlantsByEnvironment(environmentId: string, userId: string): Promise<Plant[]> {
+    // Verificar se o environment pertence ao usuário
+    const environment = await EnvironmentRepository.getEnvironmentByIdAndUser(environmentId, userId);
+    if (!environment) {
+      throw new NotFoundException('Environment not found');
+    }
+
+    return EnvironmentRepository.getPlantsByEnvironment(environmentId);
+  }
+
+  async getPlantById(plantId: string, environmentId: string, userId: string): Promise<Plant> {
+    // Verificar se o environment pertence ao usuário
+    const environment = await EnvironmentRepository.getEnvironmentByIdAndUser(environmentId, userId);
+    if (!environment) {
+      throw new NotFoundException('Environment not found');
+    }
+
+    const plant = await EnvironmentRepository.getPlantByIdAndEnvironment(plantId, environmentId);
+    if (!plant) {
+      throw new NotFoundException('Plant not found');
+    }
+
+    return plant;
+  }
+
+  async updatePlant(plantId: string, environmentId: string, data: UpdatePlantDto, userId: string): Promise<Plant> {
+    // Verificar se o environment pertence ao usuário
+    const environment = await EnvironmentRepository.getEnvironmentByIdAndUser(environmentId, userId);
+    if (!environment) {
+      throw new NotFoundException('Environment not found');
+    }
+
+    // Verificar se a planta pertence ao environment
+    const plant = await EnvironmentRepository.getPlantByIdAndEnvironment(plantId, environmentId);
+    if (!plant) {
+      throw new NotFoundException('Plant not found');
+    }
+
+    // Se estiver atualizando a genética, verificar se existe
+    if (data.geneticsId) {
+      const genetics = await EnvironmentRepository.getGeneticsById(data.geneticsId);
+      if (!genetics) {
+        throw new NotFoundException('Genetics not found');
+      }
+    }
+
+    return EnvironmentRepository.updatePlant(plantId, data);
+  }
+
+  async deletePlant(plantId: string, environmentId: string, userId: string): Promise<Plant> {
+    // Verificar se o environment pertence ao usuário
+    const environment = await EnvironmentRepository.getEnvironmentByIdAndUser(environmentId, userId);
+    if (!environment) {
+      throw new NotFoundException('Environment not found');
+    }
+
+    // Verificar se a planta pertence ao environment
+    const plant = await EnvironmentRepository.getPlantByIdAndEnvironment(plantId, environmentId);
+    if (!plant) {
+      throw new NotFoundException('Plant not found');
+    }
+
+    return EnvironmentRepository.deletePlant(plantId);
+  }
+
+  // Plant History Management
+  async createPlantHistory(plantId: string, environmentId: string, data: CreatePlantHistoryDto, userId: string): Promise<PlantHistory> {
+    // Verificar se o environment pertence ao usuário
+    const environment = await EnvironmentRepository.getEnvironmentByIdAndUser(environmentId, userId);
+    if (!environment) {
+      throw new NotFoundException('Environment not found');
+    }
+
+    // Verificar se a planta pertence ao environment
+    const plant = await EnvironmentRepository.getPlantByIdAndEnvironment(plantId, environmentId);
+    if (!plant) {
+      throw new NotFoundException('Plant not found');
+    }
+
+    return EnvironmentRepository.createPlantHistory({
+      ...data,
+      plantId,
+    });
+  }
+
+  async getPlantHistory(plantId: string, environmentId: string, userId: string): Promise<PlantHistory[]> {
+    // Verificar se o environment pertence ao usuário
+    const environment = await EnvironmentRepository.getEnvironmentByIdAndUser(environmentId, userId);
+    if (!environment) {
+      throw new NotFoundException('Environment not found');
+    }
+
+    // Verificar se a planta pertence ao environment
+    const plant = await EnvironmentRepository.getPlantByIdAndEnvironment(plantId, environmentId);
+    if (!plant) {
+      throw new NotFoundException('Plant not found');
+    }
+
+    return EnvironmentRepository.getPlantHistory(plantId);
   }
 }
