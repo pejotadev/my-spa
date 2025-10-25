@@ -52,9 +52,24 @@ export type CreateEnvironmentDto = {
   width: Scalars['Float']['input'];
 };
 
+export type CreateGeneticsDto = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+};
+
 export type CreateLightDto = {
   type: Scalars['String']['input'];
   watts?: InputMaybe<Scalars['Float']['input']>;
+};
+
+export type CreatePlantDto = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  geneticsId: Scalars['ID']['input'];
+};
+
+export type CreatePlantHistoryDto = {
+  notes?: InputMaybe<Scalars['String']['input']>;
+  stage: Scalars['String']['input'];
 };
 
 export type CreateUserDto = {
@@ -77,6 +92,15 @@ export type Environment = {
   updatedAt: Scalars['DateTime']['output'];
   userId: Scalars['ID']['output'];
   width: Scalars['Float']['output'];
+};
+
+export type Genetics = {
+  __typename?: 'Genetics';
+  createdAt: Scalars['DateTime']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
 };
 
 export type Light = {
@@ -103,19 +127,26 @@ export type Mutation = {
   createCategory: Category;
   createConfiguration: Scalars['String']['output'];
   createEnvironment: Environment;
+  createGenetics: Genetics;
   createLight: Light;
+  createPlant: Plant;
+  createPlantHistory: PlantHistory;
   createUser: User;
   deleteBooking: Scalars['Boolean']['output'];
   deleteConfiguration: Scalars['Boolean']['output'];
   deleteEnvironment: Environment;
+  deleteGenetics: Genetics;
   deleteLight: Light;
+  deletePlant: Plant;
   login: AuthPayload;
   removeCategoryFromMe: ServiceProviderCategory;
   removeUser: User;
   updateBooking: Scalars['String']['output'];
   updateConfiguration: Scalars['String']['output'];
   updateEnvironment: Environment;
+  updateGenetics: Genetics;
   updateLight: Light;
+  updatePlant: Plant;
   updateUser: User;
 };
 
@@ -162,9 +193,27 @@ export type MutationCreateEnvironmentArgs = {
 };
 
 
+export type MutationCreateGeneticsArgs = {
+  input: CreateGeneticsDto;
+};
+
+
 export type MutationCreateLightArgs = {
   environmentId: Scalars['ID']['input'];
   input: CreateLightDto;
+};
+
+
+export type MutationCreatePlantArgs = {
+  environmentId: Scalars['ID']['input'];
+  input: CreatePlantDto;
+};
+
+
+export type MutationCreatePlantHistoryArgs = {
+  environmentId: Scalars['ID']['input'];
+  input: CreatePlantHistoryDto;
+  plantId: Scalars['ID']['input'];
 };
 
 
@@ -189,9 +238,20 @@ export type MutationDeleteEnvironmentArgs = {
 };
 
 
+export type MutationDeleteGeneticsArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationDeleteLightArgs = {
   environmentId: Scalars['ID']['input'];
   lightId: Scalars['ID']['input'];
+};
+
+
+export type MutationDeletePlantArgs = {
+  environmentId: Scalars['ID']['input'];
+  plantId: Scalars['ID']['input'];
 };
 
 
@@ -229,10 +289,23 @@ export type MutationUpdateEnvironmentArgs = {
 };
 
 
+export type MutationUpdateGeneticsArgs = {
+  id: Scalars['ID']['input'];
+  input: UpdateGeneticsDto;
+};
+
+
 export type MutationUpdateLightArgs = {
   environmentId: Scalars['ID']['input'];
   input: UpdateLightDto;
   lightId: Scalars['ID']['input'];
+};
+
+
+export type MutationUpdatePlantArgs = {
+  environmentId: Scalars['ID']['input'];
+  input: UpdatePlantDto;
+  plantId: Scalars['ID']['input'];
 };
 
 
@@ -241,19 +314,45 @@ export type MutationUpdateUserArgs = {
   updateUserDto: UpdateUserDto;
 };
 
+export type Plant = {
+  __typename?: 'Plant';
+  code: Scalars['String']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  environmentId: Scalars['ID']['output'];
+  genetics?: Maybe<Genetics>;
+  geneticsId: Scalars['ID']['output'];
+  id: Scalars['ID']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+};
+
+export type PlantHistory = {
+  __typename?: 'PlantHistory';
+  createdAt: Scalars['DateTime']['output'];
+  id: Scalars['ID']['output'];
+  notes?: Maybe<Scalars['String']['output']>;
+  plantId: Scalars['ID']['output'];
+  stage: Scalars['String']['output'];
+};
+
 export type Query = {
   __typename?: 'Query';
   categories: Array<Category>;
   category: Category;
   customers: Array<User>;
+  getAllGenetics: Array<Genetics>;
   getAvailability: Scalars['String']['output'];
   getBooking: Scalars['String']['output'];
   getConfiguration: Scalars['String']['output'];
   getEnvironment: Environment;
+  getGeneticsById: Genetics;
   getLightsByEnvironment: Array<Light>;
   getMyBookings: Scalars['String']['output'];
   getMyConfigurations: Scalars['String']['output'];
   getMyEnvironments: Array<Environment>;
+  getPlantById: Plant;
+  getPlantHistory: Array<PlantHistory>;
+  getPlantsByEnvironment: Array<Plant>;
   getProviderConfigurations: Scalars['String']['output'];
   getServiceProvidersByCategory: Scalars['String']['output'];
   isFeatureEnabled: Scalars['Boolean']['output'];
@@ -296,6 +395,11 @@ export type QueryGetEnvironmentArgs = {
 };
 
 
+export type QueryGetGeneticsByIdArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type QueryGetLightsByEnvironmentArgs = {
   environmentId: Scalars['ID']['input'];
 };
@@ -305,6 +409,23 @@ export type QueryGetMyBookingsArgs = {
   configurationId: Scalars['String']['input'];
   limit?: Scalars['Float']['input'];
   pageToken?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryGetPlantByIdArgs = {
+  environmentId: Scalars['ID']['input'];
+  plantId: Scalars['ID']['input'];
+};
+
+
+export type QueryGetPlantHistoryArgs = {
+  environmentId: Scalars['ID']['input'];
+  plantId: Scalars['ID']['input'];
+};
+
+
+export type QueryGetPlantsByEnvironmentArgs = {
+  environmentId: Scalars['ID']['input'];
 };
 
 
@@ -345,9 +466,19 @@ export type UpdateEnvironmentDto = {
   width?: InputMaybe<Scalars['Float']['input']>;
 };
 
+export type UpdateGeneticsDto = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type UpdateLightDto = {
   type?: InputMaybe<Scalars['String']['input']>;
   watts?: InputMaybe<Scalars['Float']['input']>;
+};
+
+export type UpdatePlantDto = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  geneticsId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type UpdateUserDto = {
@@ -605,6 +736,75 @@ export type GetMeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetMeQuery = { __typename?: 'Query', me: { __typename?: 'User', id: string, email: string, firstName: string, lastName: string, role: string, createdAt: any, updatedAt: any } };
+
+export type GetPlantsByEnvironmentQueryVariables = Exact<{
+  environmentId: Scalars['ID']['input'];
+}>;
+
+
+export type GetPlantsByEnvironmentQuery = { __typename?: 'Query', getPlantsByEnvironment: Array<{ __typename?: 'Plant', id: string, code: string, description?: string | null, geneticsId: string, environmentId: string, createdAt: any, updatedAt: any, genetics?: { __typename?: 'Genetics', id: string, name: string, description?: string | null } | null }> };
+
+export type GetPlantByIdQueryVariables = Exact<{
+  plantId: Scalars['ID']['input'];
+  environmentId: Scalars['ID']['input'];
+}>;
+
+
+export type GetPlantByIdQuery = { __typename?: 'Query', getPlantById: { __typename?: 'Plant', id: string, code: string, description?: string | null, geneticsId: string, environmentId: string, createdAt: any, updatedAt: any, genetics?: { __typename?: 'Genetics', id: string, name: string, description?: string | null } | null } };
+
+export type CreatePlantMutationVariables = Exact<{
+  environmentId: Scalars['ID']['input'];
+  input: CreatePlantDto;
+}>;
+
+
+export type CreatePlantMutation = { __typename?: 'Mutation', createPlant: { __typename?: 'Plant', id: string, code: string, description?: string | null, geneticsId: string, environmentId: string, createdAt: any, genetics?: { __typename?: 'Genetics', id: string, name: string, description?: string | null } | null } };
+
+export type UpdatePlantMutationVariables = Exact<{
+  plantId: Scalars['ID']['input'];
+  environmentId: Scalars['ID']['input'];
+  input: UpdatePlantDto;
+}>;
+
+
+export type UpdatePlantMutation = { __typename?: 'Mutation', updatePlant: { __typename?: 'Plant', id: string, code: string, description?: string | null, geneticsId: string, environmentId: string, updatedAt: any, genetics?: { __typename?: 'Genetics', id: string, name: string, description?: string | null } | null } };
+
+export type DeletePlantMutationVariables = Exact<{
+  plantId: Scalars['ID']['input'];
+  environmentId: Scalars['ID']['input'];
+}>;
+
+
+export type DeletePlantMutation = { __typename?: 'Mutation', deletePlant: { __typename?: 'Plant', id: string } };
+
+export type GetAllGeneticsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetAllGeneticsQuery = { __typename?: 'Query', getAllGenetics: Array<{ __typename?: 'Genetics', id: string, name: string, description?: string | null, createdAt: any, updatedAt: any }> };
+
+export type CreateGeneticsMutationVariables = Exact<{
+  input: CreateGeneticsDto;
+}>;
+
+
+export type CreateGeneticsMutation = { __typename?: 'Mutation', createGenetics: { __typename?: 'Genetics', id: string, name: string, description?: string | null, createdAt: any } };
+
+export type GetPlantHistoryQueryVariables = Exact<{
+  plantId: Scalars['ID']['input'];
+  environmentId: Scalars['ID']['input'];
+}>;
+
+
+export type GetPlantHistoryQuery = { __typename?: 'Query', getPlantHistory: Array<{ __typename?: 'PlantHistory', id: string, plantId: string, stage: string, notes?: string | null, createdAt: any }> };
+
+export type CreatePlantHistoryMutationVariables = Exact<{
+  plantId: Scalars['ID']['input'];
+  environmentId: Scalars['ID']['input'];
+  input: CreatePlantHistoryDto;
+}>;
+
+
+export type CreatePlantHistoryMutation = { __typename?: 'Mutation', createPlantHistory: { __typename?: 'PlantHistory', id: string, plantId: string, stage: string, notes?: string | null, createdAt: any } };
 
 
 export const GetCategoriesDocument = gql`
@@ -1970,3 +2170,408 @@ export type GetMeQueryResult = Apollo.QueryResult<GetMeQuery, GetMeQueryVariable
 export function refetchGetMeQuery(variables?: GetMeQueryVariables) {
       return { query: GetMeDocument, variables: variables }
     }
+export const GetPlantsByEnvironmentDocument = gql`
+    query GetPlantsByEnvironment($environmentId: ID!) {
+  getPlantsByEnvironment(environmentId: $environmentId) {
+    id
+    code
+    description
+    geneticsId
+    environmentId
+    createdAt
+    updatedAt
+    genetics {
+      id
+      name
+      description
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetPlantsByEnvironmentQuery__
+ *
+ * To run a query within a React component, call `useGetPlantsByEnvironmentQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetPlantsByEnvironmentQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetPlantsByEnvironmentQuery({
+ *   variables: {
+ *      environmentId: // value for 'environmentId'
+ *   },
+ * });
+ */
+export function useGetPlantsByEnvironmentQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetPlantsByEnvironmentQuery, GetPlantsByEnvironmentQueryVariables> & ({ variables: GetPlantsByEnvironmentQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetPlantsByEnvironmentQuery, GetPlantsByEnvironmentQueryVariables>(GetPlantsByEnvironmentDocument, options);
+      }
+export function useGetPlantsByEnvironmentLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetPlantsByEnvironmentQuery, GetPlantsByEnvironmentQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetPlantsByEnvironmentQuery, GetPlantsByEnvironmentQueryVariables>(GetPlantsByEnvironmentDocument, options);
+        }
+export function useGetPlantsByEnvironmentSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetPlantsByEnvironmentQuery, GetPlantsByEnvironmentQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetPlantsByEnvironmentQuery, GetPlantsByEnvironmentQueryVariables>(GetPlantsByEnvironmentDocument, options);
+        }
+export type GetPlantsByEnvironmentQueryHookResult = ReturnType<typeof useGetPlantsByEnvironmentQuery>;
+export type GetPlantsByEnvironmentLazyQueryHookResult = ReturnType<typeof useGetPlantsByEnvironmentLazyQuery>;
+export type GetPlantsByEnvironmentSuspenseQueryHookResult = ReturnType<typeof useGetPlantsByEnvironmentSuspenseQuery>;
+export type GetPlantsByEnvironmentQueryResult = Apollo.QueryResult<GetPlantsByEnvironmentQuery, GetPlantsByEnvironmentQueryVariables>;
+export function refetchGetPlantsByEnvironmentQuery(variables: GetPlantsByEnvironmentQueryVariables) {
+      return { query: GetPlantsByEnvironmentDocument, variables: variables }
+    }
+export const GetPlantByIdDocument = gql`
+    query GetPlantById($plantId: ID!, $environmentId: ID!) {
+  getPlantById(plantId: $plantId, environmentId: $environmentId) {
+    id
+    code
+    description
+    geneticsId
+    environmentId
+    createdAt
+    updatedAt
+    genetics {
+      id
+      name
+      description
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetPlantByIdQuery__
+ *
+ * To run a query within a React component, call `useGetPlantByIdQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetPlantByIdQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetPlantByIdQuery({
+ *   variables: {
+ *      plantId: // value for 'plantId'
+ *      environmentId: // value for 'environmentId'
+ *   },
+ * });
+ */
+export function useGetPlantByIdQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetPlantByIdQuery, GetPlantByIdQueryVariables> & ({ variables: GetPlantByIdQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetPlantByIdQuery, GetPlantByIdQueryVariables>(GetPlantByIdDocument, options);
+      }
+export function useGetPlantByIdLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetPlantByIdQuery, GetPlantByIdQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetPlantByIdQuery, GetPlantByIdQueryVariables>(GetPlantByIdDocument, options);
+        }
+export function useGetPlantByIdSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetPlantByIdQuery, GetPlantByIdQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetPlantByIdQuery, GetPlantByIdQueryVariables>(GetPlantByIdDocument, options);
+        }
+export type GetPlantByIdQueryHookResult = ReturnType<typeof useGetPlantByIdQuery>;
+export type GetPlantByIdLazyQueryHookResult = ReturnType<typeof useGetPlantByIdLazyQuery>;
+export type GetPlantByIdSuspenseQueryHookResult = ReturnType<typeof useGetPlantByIdSuspenseQuery>;
+export type GetPlantByIdQueryResult = Apollo.QueryResult<GetPlantByIdQuery, GetPlantByIdQueryVariables>;
+export function refetchGetPlantByIdQuery(variables: GetPlantByIdQueryVariables) {
+      return { query: GetPlantByIdDocument, variables: variables }
+    }
+export const CreatePlantDocument = gql`
+    mutation CreatePlant($environmentId: ID!, $input: CreatePlantDto!) {
+  createPlant(environmentId: $environmentId, input: $input) {
+    id
+    code
+    description
+    geneticsId
+    environmentId
+    createdAt
+    genetics {
+      id
+      name
+      description
+    }
+  }
+}
+    `;
+export type CreatePlantMutationFn = Apollo.MutationFunction<CreatePlantMutation, CreatePlantMutationVariables>;
+
+/**
+ * __useCreatePlantMutation__
+ *
+ * To run a mutation, you first call `useCreatePlantMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreatePlantMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createPlantMutation, { data, loading, error }] = useCreatePlantMutation({
+ *   variables: {
+ *      environmentId: // value for 'environmentId'
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCreatePlantMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CreatePlantMutation, CreatePlantMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<CreatePlantMutation, CreatePlantMutationVariables>(CreatePlantDocument, options);
+      }
+export type CreatePlantMutationHookResult = ReturnType<typeof useCreatePlantMutation>;
+export type CreatePlantMutationResult = Apollo.MutationResult<CreatePlantMutation>;
+export type CreatePlantMutationOptions = Apollo.BaseMutationOptions<CreatePlantMutation, CreatePlantMutationVariables>;
+export const UpdatePlantDocument = gql`
+    mutation UpdatePlant($plantId: ID!, $environmentId: ID!, $input: UpdatePlantDto!) {
+  updatePlant(plantId: $plantId, environmentId: $environmentId, input: $input) {
+    id
+    code
+    description
+    geneticsId
+    environmentId
+    updatedAt
+    genetics {
+      id
+      name
+      description
+    }
+  }
+}
+    `;
+export type UpdatePlantMutationFn = Apollo.MutationFunction<UpdatePlantMutation, UpdatePlantMutationVariables>;
+
+/**
+ * __useUpdatePlantMutation__
+ *
+ * To run a mutation, you first call `useUpdatePlantMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdatePlantMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updatePlantMutation, { data, loading, error }] = useUpdatePlantMutation({
+ *   variables: {
+ *      plantId: // value for 'plantId'
+ *      environmentId: // value for 'environmentId'
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdatePlantMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdatePlantMutation, UpdatePlantMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<UpdatePlantMutation, UpdatePlantMutationVariables>(UpdatePlantDocument, options);
+      }
+export type UpdatePlantMutationHookResult = ReturnType<typeof useUpdatePlantMutation>;
+export type UpdatePlantMutationResult = Apollo.MutationResult<UpdatePlantMutation>;
+export type UpdatePlantMutationOptions = Apollo.BaseMutationOptions<UpdatePlantMutation, UpdatePlantMutationVariables>;
+export const DeletePlantDocument = gql`
+    mutation DeletePlant($plantId: ID!, $environmentId: ID!) {
+  deletePlant(plantId: $plantId, environmentId: $environmentId) {
+    id
+  }
+}
+    `;
+export type DeletePlantMutationFn = Apollo.MutationFunction<DeletePlantMutation, DeletePlantMutationVariables>;
+
+/**
+ * __useDeletePlantMutation__
+ *
+ * To run a mutation, you first call `useDeletePlantMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeletePlantMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deletePlantMutation, { data, loading, error }] = useDeletePlantMutation({
+ *   variables: {
+ *      plantId: // value for 'plantId'
+ *      environmentId: // value for 'environmentId'
+ *   },
+ * });
+ */
+export function useDeletePlantMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<DeletePlantMutation, DeletePlantMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<DeletePlantMutation, DeletePlantMutationVariables>(DeletePlantDocument, options);
+      }
+export type DeletePlantMutationHookResult = ReturnType<typeof useDeletePlantMutation>;
+export type DeletePlantMutationResult = Apollo.MutationResult<DeletePlantMutation>;
+export type DeletePlantMutationOptions = Apollo.BaseMutationOptions<DeletePlantMutation, DeletePlantMutationVariables>;
+export const GetAllGeneticsDocument = gql`
+    query GetAllGenetics {
+  getAllGenetics {
+    id
+    name
+    description
+    createdAt
+    updatedAt
+  }
+}
+    `;
+
+/**
+ * __useGetAllGeneticsQuery__
+ *
+ * To run a query within a React component, call `useGetAllGeneticsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetAllGeneticsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetAllGeneticsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetAllGeneticsQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<GetAllGeneticsQuery, GetAllGeneticsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetAllGeneticsQuery, GetAllGeneticsQueryVariables>(GetAllGeneticsDocument, options);
+      }
+export function useGetAllGeneticsLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetAllGeneticsQuery, GetAllGeneticsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetAllGeneticsQuery, GetAllGeneticsQueryVariables>(GetAllGeneticsDocument, options);
+        }
+export function useGetAllGeneticsSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetAllGeneticsQuery, GetAllGeneticsQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetAllGeneticsQuery, GetAllGeneticsQueryVariables>(GetAllGeneticsDocument, options);
+        }
+export type GetAllGeneticsQueryHookResult = ReturnType<typeof useGetAllGeneticsQuery>;
+export type GetAllGeneticsLazyQueryHookResult = ReturnType<typeof useGetAllGeneticsLazyQuery>;
+export type GetAllGeneticsSuspenseQueryHookResult = ReturnType<typeof useGetAllGeneticsSuspenseQuery>;
+export type GetAllGeneticsQueryResult = Apollo.QueryResult<GetAllGeneticsQuery, GetAllGeneticsQueryVariables>;
+export function refetchGetAllGeneticsQuery(variables?: GetAllGeneticsQueryVariables) {
+      return { query: GetAllGeneticsDocument, variables: variables }
+    }
+export const CreateGeneticsDocument = gql`
+    mutation CreateGenetics($input: CreateGeneticsDto!) {
+  createGenetics(input: $input) {
+    id
+    name
+    description
+    createdAt
+  }
+}
+    `;
+export type CreateGeneticsMutationFn = Apollo.MutationFunction<CreateGeneticsMutation, CreateGeneticsMutationVariables>;
+
+/**
+ * __useCreateGeneticsMutation__
+ *
+ * To run a mutation, you first call `useCreateGeneticsMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateGeneticsMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createGeneticsMutation, { data, loading, error }] = useCreateGeneticsMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCreateGeneticsMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CreateGeneticsMutation, CreateGeneticsMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<CreateGeneticsMutation, CreateGeneticsMutationVariables>(CreateGeneticsDocument, options);
+      }
+export type CreateGeneticsMutationHookResult = ReturnType<typeof useCreateGeneticsMutation>;
+export type CreateGeneticsMutationResult = Apollo.MutationResult<CreateGeneticsMutation>;
+export type CreateGeneticsMutationOptions = Apollo.BaseMutationOptions<CreateGeneticsMutation, CreateGeneticsMutationVariables>;
+export const GetPlantHistoryDocument = gql`
+    query GetPlantHistory($plantId: ID!, $environmentId: ID!) {
+  getPlantHistory(plantId: $plantId, environmentId: $environmentId) {
+    id
+    plantId
+    stage
+    notes
+    createdAt
+  }
+}
+    `;
+
+/**
+ * __useGetPlantHistoryQuery__
+ *
+ * To run a query within a React component, call `useGetPlantHistoryQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetPlantHistoryQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetPlantHistoryQuery({
+ *   variables: {
+ *      plantId: // value for 'plantId'
+ *      environmentId: // value for 'environmentId'
+ *   },
+ * });
+ */
+export function useGetPlantHistoryQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetPlantHistoryQuery, GetPlantHistoryQueryVariables> & ({ variables: GetPlantHistoryQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetPlantHistoryQuery, GetPlantHistoryQueryVariables>(GetPlantHistoryDocument, options);
+      }
+export function useGetPlantHistoryLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetPlantHistoryQuery, GetPlantHistoryQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetPlantHistoryQuery, GetPlantHistoryQueryVariables>(GetPlantHistoryDocument, options);
+        }
+export function useGetPlantHistorySuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetPlantHistoryQuery, GetPlantHistoryQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetPlantHistoryQuery, GetPlantHistoryQueryVariables>(GetPlantHistoryDocument, options);
+        }
+export type GetPlantHistoryQueryHookResult = ReturnType<typeof useGetPlantHistoryQuery>;
+export type GetPlantHistoryLazyQueryHookResult = ReturnType<typeof useGetPlantHistoryLazyQuery>;
+export type GetPlantHistorySuspenseQueryHookResult = ReturnType<typeof useGetPlantHistorySuspenseQuery>;
+export type GetPlantHistoryQueryResult = Apollo.QueryResult<GetPlantHistoryQuery, GetPlantHistoryQueryVariables>;
+export function refetchGetPlantHistoryQuery(variables: GetPlantHistoryQueryVariables) {
+      return { query: GetPlantHistoryDocument, variables: variables }
+    }
+export const CreatePlantHistoryDocument = gql`
+    mutation CreatePlantHistory($plantId: ID!, $environmentId: ID!, $input: CreatePlantHistoryDto!) {
+  createPlantHistory(
+    plantId: $plantId
+    environmentId: $environmentId
+    input: $input
+  ) {
+    id
+    plantId
+    stage
+    notes
+    createdAt
+  }
+}
+    `;
+export type CreatePlantHistoryMutationFn = Apollo.MutationFunction<CreatePlantHistoryMutation, CreatePlantHistoryMutationVariables>;
+
+/**
+ * __useCreatePlantHistoryMutation__
+ *
+ * To run a mutation, you first call `useCreatePlantHistoryMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreatePlantHistoryMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createPlantHistoryMutation, { data, loading, error }] = useCreatePlantHistoryMutation({
+ *   variables: {
+ *      plantId: // value for 'plantId'
+ *      environmentId: // value for 'environmentId'
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCreatePlantHistoryMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CreatePlantHistoryMutation, CreatePlantHistoryMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<CreatePlantHistoryMutation, CreatePlantHistoryMutationVariables>(CreatePlantHistoryDocument, options);
+      }
+export type CreatePlantHistoryMutationHookResult = ReturnType<typeof useCreatePlantHistoryMutation>;
+export type CreatePlantHistoryMutationResult = Apollo.MutationResult<CreatePlantHistoryMutation>;
+export type CreatePlantHistoryMutationOptions = Apollo.BaseMutationOptions<CreatePlantHistoryMutation, CreatePlantHistoryMutationVariables>;

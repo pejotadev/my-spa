@@ -3,6 +3,7 @@ import { useQuery, useMutation } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
 import Layout from './Layout';
 import LightManager from './LightManager';
+import PlantManager from './PlantManager';
 import { 
   GetEnvironmentDocument, 
   UpdateEnvironmentDocument 
@@ -35,7 +36,7 @@ interface EnvironmentDetailsProps {
 
 const EnvironmentDetails: React.FC<EnvironmentDetailsProps> = ({ environmentId }) => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'details' | 'lights'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'lights' | 'plants'>('details');
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<UpdateEnvironmentInput>({});
 
@@ -131,16 +132,26 @@ const EnvironmentDetails: React.FC<EnvironmentDetailsProps> = ({ environmentId }
           >
             Details
           </button>
-          <button
-            onClick={() => setActiveTab('lights')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'lights'
-                ? 'border-green-500 text-green-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Lights
-          </button>
+                  <button
+                    onClick={() => setActiveTab('lights')}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                      activeTab === 'lights'
+                        ? 'border-green-500 text-green-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    Lights
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('plants')}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                      activeTab === 'plants'
+                        ? 'border-green-500 text-green-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    Plants
+                  </button>
         </nav>
       </div>
 
@@ -309,10 +320,15 @@ const EnvironmentDetails: React.FC<EnvironmentDetailsProps> = ({ environmentId }
         </div>
       )}
 
-      {/* Lights Tab */}
-      {activeTab === 'lights' && (
-        <LightManager environmentId={environmentId} />
-      )}
+              {/* Lights Tab */}
+              {activeTab === 'lights' && (
+                <LightManager environmentId={environmentId} />
+              )}
+
+              {/* Plants Tab */}
+              {activeTab === 'plants' && (
+                <PlantManager environmentId={environmentId} />
+              )}
         </div>
       </div>
     </Layout>
