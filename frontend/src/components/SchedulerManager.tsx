@@ -10,14 +10,14 @@ const GET_MY_CONFIGURATIONS = gql`
 `;
 
 const GET_MY_BOOKINGS = gql`
-  query GetMyBookings($configurationId: String!, $limit: Int, $pageToken: String) {
+  query GetMyBookings($configurationId: String!, $limit: Float, $pageToken: String) {
     getMyBookings(configurationId: $configurationId, limit: $limit, pageToken: $pageToken)
   }
 `;
 
 const GET_AVAILABILITY = gql`
-  query GetAvailability($configurationId: String!, $startTime: String!, $endTime: String!) {
-    getAvailability(configurationId: $configurationId, startTime: $startTime, endTime: $endTime)
+  query GetAvailability($configurationId: String!, $startTime: String!, $endTime: String!, $serviceProviderEmail: String!) {
+    getAvailability(configurationId: $configurationId, startTime: $startTime, endTime: $endTime, serviceProviderEmail: $serviceProviderEmail)
   }
 `;
 

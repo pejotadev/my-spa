@@ -1,59 +1,14 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, gql } from '@apollo/client';
-import { useAuth } from '../hooks/useAuth';
+import { useQuery, useMutation } from '@apollo/client';
+// useAuth removed as it's not used
 import { useNavigate } from 'react-router-dom';
+import { 
+  GetMyEnvironmentsDocument, 
+  CreateEnvironmentDocument, 
+  DeleteEnvironmentDocument 
+} from '../generated/graphql';
 
-const GET_MY_ENVIRONMENTS = gql`
-  query GetMyEnvironments {
-    getMyEnvironments {
-      id
-      name
-      isIndoor
-      width
-      height
-      depth
-      createdAt
-      updatedAt
-    }
-  }
-`;
-
-const CREATE_ENVIRONMENT = gql`
-  mutation CreateEnvironment($input: CreateEnvironmentDto!) {
-    createEnvironment(input: $input) {
-      id
-      name
-      isIndoor
-      width
-      height
-      depth
-      createdAt
-    }
-  }
-`;
-
-const UPDATE_ENVIRONMENT = gql`
-  mutation UpdateEnvironment($id: ID!, $input: UpdateEnvironmentDto!) {
-    updateEnvironment(id: $id, input: $input) {
-      id
-      name
-      isIndoor
-      width
-      height
-      depth
-      updatedAt
-    }
-  }
-`;
-
-const DELETE_ENVIRONMENT = gql`
-  mutation DeleteEnvironment($id: ID!) {
-    deleteEnvironment(id: $id) {
-      id
-      name
-    }
-  }
-`;
+// Using generated queries and mutations from codegen
 
 interface Environment {
   id: string;
@@ -75,7 +30,6 @@ interface CreateEnvironmentInput {
 }
 
 const GardenManager: React.FC = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -87,10 +41,10 @@ const GardenManager: React.FC = () => {
     depth: undefined,
   });
 
-  const { data, loading, error, refetch } = useQuery(GET_MY_ENVIRONMENTS);
-  const [createEnvironment] = useMutation(CREATE_ENVIRONMENT);
-  const [updateEnvironment] = useMutation(UPDATE_ENVIRONMENT);
-  const [deleteEnvironment] = useMutation(DELETE_ENVIRONMENT);
+  const { data, loading, error, refetch } = useQuery(GetMyEnvironmentsDocument);
+  const [createEnvironment] = useMutation(CreateEnvironmentDocument);
+  // updateEnvironment mutation available but not used in current implementation
+  const [deleteEnvironment] = useMutation(DeleteEnvironmentDocument);
 
   const environments: Environment[] = data?.getMyEnvironments || [];
 
@@ -114,17 +68,7 @@ const GardenManager: React.FC = () => {
     }
   };
 
-  const handleUpdate = async (id: string, updatedData: Partial<CreateEnvironmentInput>) => {
-    try {
-      await updateEnvironment({
-        variables: { id, input: updatedData },
-      });
-      setEditingId(null);
-      refetch();
-    } catch (error) {
-      console.error('Error updating environment:', error);
-    }
-  };
+  // handleUpdate function removed as it's not used in the current implementation
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this environment?')) {

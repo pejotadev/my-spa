@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { useGetMeQuery } from '../utils/graphql';
+import { useGetMeQuery } from '../generated/graphql';
 import { useFeature } from '../hooks/useFeature';
 import Layout from '../components/Layout';
 import CustomerBooking from '../components/CustomerBooking';

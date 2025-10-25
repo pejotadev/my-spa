@@ -7,7 +7,7 @@ import {
   useGetCustomersQuery,
   useGetServiceProvidersQuery,
   useCreateUserMutation
-} from '../utils/graphql';
+} from '../generated/graphql';
 import { CreateUserDto, User, UserRole } from '../types';
 
 const AdminDashboard: React.FC = () => {

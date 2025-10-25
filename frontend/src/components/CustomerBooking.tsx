@@ -27,7 +27,7 @@ const GET_PROVIDER_CONFIGURATIONS = gql`
 `;
 
 const GET_AVAILABILITY = gql`
-  query GetAvailability($configurationId: String!, $startTime: String!, $endTime: String!, $serviceProviderEmail: String!) {
+  query GetCustomerAvailability($configurationId: String!, $startTime: String!, $endTime: String!, $serviceProviderEmail: String!) {
     getAvailability(configurationId: $configurationId, startTime: $startTime, endTime: $endTime, serviceProviderEmail: $serviceProviderEmail)
   }
 `;

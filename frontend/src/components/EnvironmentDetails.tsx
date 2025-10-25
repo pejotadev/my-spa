@@ -1,37 +1,14 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, gql } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
 import Layout from './Layout';
 import LightManager from './LightManager';
+import { 
+  GetEnvironmentDocument, 
+  UpdateEnvironmentDocument 
+} from '../generated/graphql';
 
-const GET_ENVIRONMENT = gql`
-  query GetEnvironment($id: ID!) {
-    getEnvironment(id: $id) {
-      id
-      name
-      isIndoor
-      width
-      height
-      depth
-      createdAt
-      updatedAt
-    }
-  }
-`;
-
-const UPDATE_ENVIRONMENT = gql`
-  mutation UpdateEnvironment($id: ID!, $input: UpdateEnvironmentDto!) {
-    updateEnvironment(id: $id, input: $input) {
-      id
-      name
-      isIndoor
-      width
-      height
-      depth
-      updatedAt
-    }
-  }
-`;
+// Using generated queries and mutations from codegen
 
 interface Environment {
   id: string;
@@ -62,10 +39,10 @@ const EnvironmentDetails: React.FC<EnvironmentDetailsProps> = ({ environmentId }
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<UpdateEnvironmentInput>({});
 
-  const { data, loading, error, refetch } = useQuery(GET_ENVIRONMENT, {
+  const { data, loading, error, refetch } = useQuery(GetEnvironmentDocument, {
     variables: { id: environmentId },
   });
-  const [updateEnvironment] = useMutation(UPDATE_ENVIRONMENT);
+  const [updateEnvironment] = useMutation(UpdateEnvironmentDocument);
 
   const environment: Environment | undefined = data?.getEnvironment;
 

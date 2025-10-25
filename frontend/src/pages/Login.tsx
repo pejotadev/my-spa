@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../hooks/useAuth';
 import { LoginDto } from '../types';
-import { useLoginMutation } from '../utils/graphql';
+import { useLoginMutation } from '../generated/graphql';
 
 const Login: React.FC = () => {
   const { login } = useAuth();

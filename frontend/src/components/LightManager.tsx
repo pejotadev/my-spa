@@ -1,48 +1,12 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, gql } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
+import { 
+  GetLightsByEnvironmentDocument, 
+  CreateLightDocument, 
+  DeleteLightDocument 
+} from '../generated/graphql';
 
-const GET_LIGHTS_BY_ENVIRONMENT = gql`
-  query GetLightsByEnvironment($environmentId: ID!) {
-    getLightsByEnvironment(environmentId: $environmentId) {
-      id
-      type
-      watts
-      createdAt
-      updatedAt
-    }
-  }
-`;
-
-const CREATE_LIGHT = gql`
-  mutation CreateLight($environmentId: ID!, $input: CreateLightDto!) {
-    createLight(environmentId: $environmentId, input: $input) {
-      id
-      type
-      watts
-      createdAt
-    }
-  }
-`;
-
-const UPDATE_LIGHT = gql`
-  mutation UpdateLight($lightId: ID!, $environmentId: ID!, $input: UpdateLightDto!) {
-    updateLight(lightId: $lightId, environmentId: $environmentId, input: $input) {
-      id
-      type
-      watts
-      updatedAt
-    }
-  }
-`;
-
-const DELETE_LIGHT = gql`
-  mutation DeleteLight($lightId: ID!, $environmentId: ID!) {
-    deleteLight(lightId: $lightId, environmentId: $environmentId) {
-      id
-      type
-    }
-  }
-`;
+// Using generated queries and mutations from codegen
 
 interface Light {
   id: string;
@@ -79,12 +43,12 @@ const LightManager: React.FC<LightManagerProps> = ({ environmentId }) => {
     watts: undefined,
   });
 
-  const { data, loading, error, refetch } = useQuery(GET_LIGHTS_BY_ENVIRONMENT, {
+  const { data, loading, error, refetch } = useQuery(GetLightsByEnvironmentDocument, {
     variables: { environmentId },
   });
-  const [createLight] = useMutation(CREATE_LIGHT);
-  const [updateLight] = useMutation(UPDATE_LIGHT);
-  const [deleteLight] = useMutation(DELETE_LIGHT);
+  const [createLight] = useMutation(CreateLightDocument);
+  // updateLight mutation available but not used in current implementation
+  const [deleteLight] = useMutation(DeleteLightDocument);
 
   const lights: Light[] = data?.getLightsByEnvironment || [];
 
@@ -108,21 +72,7 @@ const LightManager: React.FC<LightManagerProps> = ({ environmentId }) => {
     }
   };
 
-  const handleUpdate = async (lightId: string, updatedData: Partial<CreateLightInput>) => {
-    try {
-      await updateLight({
-        variables: { 
-          lightId, 
-          environmentId, 
-          input: updatedData 
-        },
-      });
-      setEditingId(null);
-      refetch();
-    } catch (error) {
-      console.error('Error updating light:', error);
-    }
-  };
+  // handleUpdate function removed as it's not used in the current implementation
 
   const handleDelete = async (lightId: string) => {
     if (window.confirm('Are you sure you want to delete this light?')) {
