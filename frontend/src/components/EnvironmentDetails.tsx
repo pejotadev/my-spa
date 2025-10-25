@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, gql } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
 import Layout from './Layout';
+import LightManager from './LightManager';
 
 const GET_ENVIRONMENT = gql`
   query GetEnvironment($id: ID!) {
@@ -57,7 +58,7 @@ interface EnvironmentDetailsProps {
 
 const EnvironmentDetails: React.FC<EnvironmentDetailsProps> = ({ environmentId }) => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'details' | 'plants'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'lights'>('details');
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<UpdateEnvironmentInput>({});
 
@@ -154,14 +155,14 @@ const EnvironmentDetails: React.FC<EnvironmentDetailsProps> = ({ environmentId }
             Details
           </button>
           <button
-            onClick={() => setActiveTab('plants')}
+            onClick={() => setActiveTab('lights')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'plants'
+              activeTab === 'lights'
                 ? 'border-green-500 text-green-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Plants
+            Lights
           </button>
         </nav>
       </div>
@@ -331,19 +332,9 @@ const EnvironmentDetails: React.FC<EnvironmentDetailsProps> = ({ environmentId }
         </div>
       )}
 
-      {/* Plants Tab */}
-      {activeTab === 'plants' && (
-        <div className="bg-white border border-gray-200 rounded-lg p-8">
-          <div className="text-center">
-            <svg className="h-12 w-12 text-gray-400 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm8 0a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1V8z" clipRule="evenodd" />
-            </svg>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Plants Management</h3>
-            <p className="text-gray-600">
-              Plant management features will be available soon. You'll be able to add, track, and manage your plants, fruits, and vegetables in this environment.
-            </p>
-          </div>
-        </div>
+      {/* Lights Tab */}
+      {activeTab === 'lights' && (
+        <LightManager environmentId={environmentId} />
       )}
         </div>
       </div>
