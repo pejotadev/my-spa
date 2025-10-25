@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, gql } from '@apollo/client';
 import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 const GET_MY_ENVIRONMENTS = gql`
   query GetMyEnvironments {
@@ -75,6 +76,7 @@ interface CreateEnvironmentInput {
 
 const GardenManager: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<CreateEnvironmentInput>({
@@ -146,6 +148,10 @@ const GardenManager: React.FC = () => {
       height: env.height,
       depth: env.depth,
     });
+  };
+
+  const viewDetails = (envId: string) => {
+    navigate(`/environment/${envId}`);
   };
 
   if (loading) return <div className="text-center py-8">Loading environments...</div>;
@@ -301,6 +307,12 @@ const GardenManager: React.FC = () => {
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">{env.name}</h3>
                 <div className="flex gap-2">
+                  <button
+                    onClick={() => viewDetails(env.id)}
+                    className="text-green-600 hover:text-green-800 text-sm font-medium"
+                  >
+                    View Details
+                  </button>
                   <button
                     onClick={() => startEdit(env)}
                     className="text-blue-600 hover:text-blue-800 text-sm font-medium"

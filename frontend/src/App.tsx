@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { ApolloProvider } from '@apollo/client';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { client } from './utils/apollo';
@@ -8,6 +8,12 @@ import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ServiceProviderDashboard from './pages/ServiceProviderDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import EnvironmentDetails from './components/EnvironmentDetails';
+
+const EnvironmentDetailsWrapper: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  return <EnvironmentDetails environmentId={id!} />;
+};
 
 const AppRoutes: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -39,6 +45,14 @@ const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute requireRole="SERVICE_PROVIDER">
             <ServiceProviderDashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/environment/:id" 
+        element={
+          <ProtectedRoute>
+            <EnvironmentDetailsWrapper />
           </ProtectedRoute>
         } 
       />
