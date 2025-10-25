@@ -1,9 +1,7 @@
-import { Resolver, Query, Mutation, Args, Context } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { NylasService } from '../nylas/nylas.service';
 import { SimpleJwtGuard } from '../auth/simple-jwt.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
 import { Public } from '../auth/public.decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { CurrentUser } from '../auth/current-user.decorator';
