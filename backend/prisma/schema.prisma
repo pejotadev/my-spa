@@ -29,6 +29,9 @@ model User {
   
   // Relacionamento com features
   userFeatures UserFeature[]
+  
+  // Relacionamento com environments
+  environments Environment[]
 
   @@map("users")
 }
@@ -88,4 +91,20 @@ model UserFeature {
 
   @@unique([userId, featureId])
   @@map("user_features")
+}
+
+model Environment {
+  id        String   @id @default(cuid())
+  name      String
+  isIndoor  Boolean  @default(true) // true for indoor, false for outdoor
+  width     Float    // width in meters
+  height    Float    // height in meters (vertical dimension)
+  depth     Float?   // depth in meters (optional - horizontal depth)
+  userId    String   // owner of the environment
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("environments")
 }

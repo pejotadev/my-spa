@@ -25,6 +25,14 @@ input CreateCategoryDto {
   name: String!
 }
 
+input CreateEnvironmentDto {
+  depth: Float
+  height: Float!
+  isIndoor: Boolean!
+  name: String!
+  width: Float!
+}
+
 input CreateUserDto {
   email: String!
   firstName: String!
@@ -39,6 +47,18 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type Environment {
+  createdAt: DateTime!
+  depth: Float
+  height: Float!
+  id: ID!
+  isIndoor: Boolean!
+  name: String!
+  updatedAt: DateTime!
+  userId: ID!
+  width: Float!
+}
+
 input LoginDto {
   email: String!
   password: String!
@@ -51,14 +71,17 @@ type Mutation {
   createBooking(configurationId: String!, customerEmail: String!, customerName: String!, endTime: String!, serviceProviderEmail: String!, startTime: String!): String!
   createCategory(createCategoryDto: CreateCategoryDto!): Category!
   createConfiguration(configurationData: String!): String!
+  createEnvironment(input: CreateEnvironmentDto!): Environment!
   createUser(createUserDto: CreateUserDto!): User!
   deleteBooking(bookingId: String!, configurationId: String!): Boolean!
   deleteConfiguration(configurationId: String!): Boolean!
+  deleteEnvironment(id: ID!): Environment!
   login(loginDto: LoginDto!): AuthPayload!
   removeCategoryFromMe(categoryId: String!): ServiceProviderCategory!
   removeUser(id: String!): User!
   updateBooking(bookingData: String!, bookingId: String!, configurationId: String!): String!
   updateConfiguration(configurationData: String!, configurationId: String!): String!
+  updateEnvironment(id: ID!, input: UpdateEnvironmentDto!): Environment!
   updateUser(id: String!, updateUserDto: UpdateUserDto!): User!
 }
 
@@ -69,8 +92,10 @@ type Query {
   getAvailability(configurationId: String!, endTime: String!, serviceProviderEmail: String!, startTime: String!): String!
   getBooking(bookingId: String!, configurationId: String!): String!
   getConfiguration(configurationId: String!): String!
+  getEnvironment(id: ID!): Environment!
   getMyBookings(configurationId: String!, limit: Float! = 20, pageToken: String): String!
   getMyConfigurations: String!
+  getMyEnvironments: [Environment!]!
   getProviderConfigurations(providerEmail: String!): String!
   getServiceProvidersByCategory(categoryId: String!): String!
   isFeatureEnabled(featureName: String!): Boolean!
@@ -90,6 +115,14 @@ type ServiceProviderCategory {
   id: ID!
   serviceProvider: User!
   serviceProviderId: String!
+}
+
+input UpdateEnvironmentDto {
+  depth: Float
+  height: Float
+  isIndoor: Boolean
+  name: String
+  width: Float
 }
 
 input UpdateUserDto {

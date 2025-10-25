@@ -10,6 +10,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { BookingModule } from './booking/booking.module';
 import { FeaturesModule } from './features/features.module';
+import { GardenModule } from './garden/garden.module';
 import { TestResolver } from './test-resolver';
 
 @Module({
@@ -30,6 +31,7 @@ import { TestResolver } from './test-resolver';
     SchedulerModule,
     BookingModule,
     FeaturesModule,
+    GardenModule,
   ],
   providers: [TestResolver],
   // providers: [
