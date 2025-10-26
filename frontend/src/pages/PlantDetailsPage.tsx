@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
@@ -18,6 +18,9 @@ const PlantDetailsPage: React.FC = () => {
   const [isEditingStage, setIsEditingStage] = useState(false);
   const [isEditingHistory, setIsEditingHistory] = useState<string | null>(null);
   const [isAddingHistory, setIsAddingHistory] = useState(false);
+  const nutrientMixesRef = useRef<HTMLDivElement>(null);
+
+
   const [stageFormData, setStageFormData] = useState({
     currentStage: '',
   });
@@ -27,6 +30,108 @@ const PlantDetailsPage: React.FC = () => {
     typeId: '',
     data: '',
   });
+
+  // Render nutrient mixes dynamically
+  useEffect(() => {
+    if (nutrientMixesRef.current && historyFormData.typeId === 'type4') {
+      const currentData = JSON.parse(historyFormData.data || '{}');
+      const nutrientMixes = currentData.nutrientMixes || [];
+      const applicationMethod = currentData.applicationMethod;
+
+      // Add global functions for nutrient mix manipulation
+      (window as any).updateNutrientMix = (index: number, field: string, value: any) => {
+        const currentData = JSON.parse(historyFormData.data || '{}');
+        const nutrientMixes = [...(currentData.nutrientMixes || [])];
+        
+        if (field === 'amount') {
+          nutrientMixes[index] = { ...nutrientMixes[index], amount: value };
+        } else {
+          nutrientMixes[index] = { ...nutrientMixes[index], [field]: value };
+        }
+        
+        setHistoryFormData({
+          ...historyFormData,
+          data: JSON.stringify({ ...currentData, nutrientMixes })
+        });
+      };
+
+      (window as any).removeNutrientMix = (index: number) => {
+        const currentData = JSON.parse(historyFormData.data || '{}');
+        const nutrientMixes = [...(currentData.nutrientMixes || [])];
+        nutrientMixes.splice(index, 1);
+        
+        setHistoryFormData({
+          ...historyFormData,
+          data: JSON.stringify({ ...currentData, nutrientMixes })
+        });
+      };
+
+      if (nutrientMixesRef.current) {
+        nutrientMixesRef.current.innerHTML = '';
+        
+        nutrientMixes.forEach((mix: any, index: number) => {
+          const mixDiv = document.createElement('div');
+          mixDiv.className = 'border border-gray-300 rounded-md p-3 bg-gray-50';
+          
+          mixDiv.innerHTML = `
+            <div class="flex justify-between items-center mb-2">
+              <h4 class="font-medium text-gray-700">Nutrient Mix ${index + 1}</h4>
+              <button type="button" onclick="removeNutrientMix(${index})" class="text-red-500 hover:text-red-700 text-sm">Remove</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Nutrient Name *</label>
+                <input type="text" value="${mix.nutrientName || ''}" onchange="updateNutrientMix(${index}, 'nutrientName', this.value)" 
+                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm" placeholder="e.g., NPK 20-20-20" required />
+              </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Solvent Quantity *</label>
+              <input type="number" value="${mix.solvent?.quantity || ''}" onchange="updateNutrientMix(${index}, 'solvent', {quantity: this.value, volumeUnit: '${mix.solvent?.volumeUnit || 'L'}'})" 
+                     class="w-full px-2 py-1 border border-gray-300 rounded text-sm" placeholder="e.g., 1" required />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Solvent Volume Unit *</label>
+              <select onchange="updateNutrientMix(${index}, 'solvent', {quantity: '${mix.solvent?.quantity || ''}', volumeUnit: this.value})" 
+                      class="w-full px-2 py-1 border border-gray-300 rounded text-sm">
+                <option value="ml" ${mix.solvent?.volumeUnit === 'ml' ? 'selected' : ''}>ml</option>
+                <option value="L" ${mix.solvent?.volumeUnit === 'L' ? 'selected' : ''}>L</option>
+                <option value="gal" ${mix.solvent?.volumeUnit === 'gal' ? 'selected' : ''}>gal</option>
+                <option value="qt" ${mix.solvent?.volumeUnit === 'qt' ? 'selected' : ''}>qt</option>
+              </select>
+            </div>
+              ${applicationMethod === 'Solid' ? `
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-1">Weight *</label>
+                  <input type="number" value="${mix.amount?.weight || ''}" onchange="updateNutrientMix(${index}, 'amount', {weight: this.value})" 
+                         class="w-full px-2 py-1 border border-gray-300 rounded text-sm" placeholder="e.g., 5" required />
+                </div>
+              ` : `
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-1">Quantity *</label>
+                  <input type="number" value="${mix.amount?.quantity || ''}" onchange="updateNutrientMix(${index}, 'amount', {quantity: this.value, volumeUnit: '${mix.amount?.volumeUnit || 'ml'}'})" 
+                         class="w-full px-2 py-1 border border-gray-300 rounded text-sm" placeholder="e.g., 10" required />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-1">Volume Unit *</label>
+                  <select onchange="updateNutrientMix(${index}, 'amount', {quantity: '${mix.amount?.quantity || ''}', volumeUnit: this.value})" 
+                          class="w-full px-2 py-1 border border-gray-300 rounded text-sm">
+                    <option value="ml" ${mix.amount?.volumeUnit === 'ml' ? 'selected' : ''}>ml</option>
+                    <option value="L" ${mix.amount?.volumeUnit === 'L' ? 'selected' : ''}>L</option>
+                    <option value="gal" ${mix.amount?.volumeUnit === 'gal' ? 'selected' : ''}>gal</option>
+                    <option value="qt" ${mix.amount?.volumeUnit === 'qt' ? 'selected' : ''}>qt</option>
+                  </select>
+                </div>
+              `}
+            </div>
+          `;
+          
+          if (nutrientMixesRef.current) {
+            nutrientMixesRef.current.appendChild(mixDiv);
+          }
+        });
+      }
+    }
+  }, [historyFormData.data, historyFormData.typeId]);
 
   const { data: plantData, loading: plantLoading, refetch: refetchPlant } = useQuery(GetPlantByIdDocument, {
     variables: { plantId: plantId!, environmentId: environmentId! },
@@ -462,6 +567,82 @@ const PlantDetailsPage: React.FC = () => {
                       </select>
                     </div>
                   )}
+
+                  {/* Nutrients type specific fields */}
+                  {historyFormData.typeId === 'type4' && (
+                    <div className="space-y-4">
+                      <div>
+                        <label htmlFor="addApplicationMethod" className="block text-sm font-medium text-gray-700 mb-2">
+                          Application Method *
+                        </label>
+                        <select
+                          id="addApplicationMethod"
+                          onChange={(e) => {
+                            const applicationMethod = e.target.value;
+                            const currentData = JSON.parse(historyFormData.data || '{}');
+                            setHistoryFormData({ 
+                              ...historyFormData, 
+                              data: JSON.stringify({ 
+                                ...currentData, 
+                                applicationMethod,
+                                nutrientMixes: currentData.nutrientMixes || []
+                              })
+                            });
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                          required
+                        >
+                          <option value="">Select application method</option>
+                          <option value="Liquid">Liquid</option>
+                          <option value="Spray">Spray</option>
+                          <option value="Solid">Solid</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Nutrient Mixes *
+                        </label>
+                        <div ref={nutrientMixesRef} className="space-y-3">
+                          {/* Nutrient mixes will be added dynamically */}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const currentData = JSON.parse(historyFormData.data || '{}');
+                            const nutrientMixes = currentData.nutrientMixes || [];
+                            const applicationMethod = currentData.applicationMethod;
+                            
+                            let newMix;
+                            if (applicationMethod === 'Solid') {
+                              newMix = {
+                                nutrientName: '',
+                                amount: { weight: '' },
+                                solvent: { quantity: '', volumeUnit: 'L' }
+                              };
+                            } else {
+                              newMix = {
+                                nutrientName: '',
+                                amount: { quantity: '', volumeUnit: 'ml' },
+                                solvent: { quantity: '', volumeUnit: 'L' }
+                              };
+                            }
+                            
+                            setHistoryFormData({ 
+                              ...historyFormData, 
+                              data: JSON.stringify({ 
+                                ...currentData, 
+                                nutrientMixes: [...nutrientMixes, newMix]
+                              })
+                            });
+                          }}
+                          className="mt-2 px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                        >
+                          + Add Nutrient Mix
+                        </button>
+                      </div>
+                    </div>
+                  )}
                   <div className="flex gap-3">
                     <button
                       type="submit"
@@ -577,6 +758,31 @@ const PlantDetailsPage: React.FC = () => {
                                 try {
                                   const data = JSON.parse(entry.data);
                                   return `Pruning: ${data.pruningType}`;
+                                } catch {
+                                  return entry.data;
+                                }
+                              })()}
+                            </div>
+                          )}
+                          {entry.data && entry.type?.name === 'nutrients' && (
+                            <div className="text-sm text-gray-600 mb-2">
+                              {(() => {
+                                try {
+                                  const data = JSON.parse(entry.data);
+                                  const method = data.applicationMethod;
+                                  const mixes = data.nutrientMixes || [];
+                                  const mixDetails = mixes.map((mix: any) => {
+                                    const solventText = typeof mix.solvent === 'string' 
+                                      ? mix.solvent 
+                                      : `${mix.solvent?.quantity || ''}${mix.solvent?.volumeUnit || ''}`;
+                                    
+                                    if (method === 'Solid') {
+                                      return `${mix.nutrientName} (${mix.amount?.weight}g in ${solventText})`;
+                                    } else {
+                                      return `${mix.nutrientName} (${mix.amount?.quantity}${mix.amount?.volumeUnit} in ${solventText})`;
+                                    }
+                                  }).join(', ');
+                                  return `Nutrients (${method}): ${mixDetails}`;
                                 } catch {
                                   return entry.data;
                                 }
