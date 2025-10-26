@@ -8,6 +8,7 @@ export const GET_PLANTS_BY_ENVIRONMENT = gql`
       description
       geneticsId
       environmentId
+      currentStage
       createdAt
       updatedAt
       genetics {
@@ -27,6 +28,7 @@ export const GET_PLANT_BY_ID = gql`
       description
       geneticsId
       environmentId
+      currentStage
       createdAt
       updatedAt
       genetics {

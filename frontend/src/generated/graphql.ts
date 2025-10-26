@@ -805,7 +805,7 @@ export type GetPlantsByEnvironmentQueryVariables = Exact<{
 }>;
 
 
-export type GetPlantsByEnvironmentQuery = { __typename?: 'Query', getPlantsByEnvironment: Array<{ __typename?: 'Plant', id: string, code: string, description?: string | null, geneticsId: string, environmentId: string, createdAt: any, updatedAt: any, genetics?: { __typename?: 'Genetics', id: string, name: string, description?: string | null } | null }> };
+export type GetPlantsByEnvironmentQuery = { __typename?: 'Query', getPlantsByEnvironment: Array<{ __typename?: 'Plant', id: string, code: string, description?: string | null, geneticsId: string, environmentId: string, currentStage?: string | null, createdAt: any, updatedAt: any, genetics?: { __typename?: 'Genetics', id: string, name: string, description?: string | null } | null }> };
 
 export type GetPlantByIdQueryVariables = Exact<{
   plantId: Scalars['ID']['input'];
@@ -813,7 +813,7 @@ export type GetPlantByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetPlantByIdQuery = { __typename?: 'Query', getPlantById: { __typename?: 'Plant', id: string, code: string, description?: string | null, geneticsId: string, environmentId: string, createdAt: any, updatedAt: any, genetics?: { __typename?: 'Genetics', id: string, name: string, description?: string | null } | null } };
+export type GetPlantByIdQuery = { __typename?: 'Query', getPlantById: { __typename?: 'Plant', id: string, code: string, description?: string | null, geneticsId: string, environmentId: string, currentStage?: string | null, createdAt: any, updatedAt: any, genetics?: { __typename?: 'Genetics', id: string, name: string, description?: string | null } | null } };
 
 export type CreatePlantMutationVariables = Exact<{
   environmentId: Scalars['ID']['input'];
@@ -2363,6 +2363,7 @@ export const GetPlantsByEnvironmentDocument = gql`
     description
     geneticsId
     environmentId
+    currentStage
     createdAt
     updatedAt
     genetics {
@@ -2417,6 +2418,7 @@ export const GetPlantByIdDocument = gql`
     description
     geneticsId
     environmentId
+    currentStage
     createdAt
     updatedAt
     genetics {
