@@ -5,7 +5,8 @@ import {
   GetPlantHistoryDocument,
   UpdatePlantStageDocument,
   UpdatePlantHistoryDocument,
-  DeletePlantHistoryDocument
+  DeletePlantHistoryDocument,
+  CreatePlantHistoryDocument
 } from '../generated/graphql';
 
 interface PlantDetailsProps {
@@ -17,6 +18,7 @@ interface PlantDetailsProps {
 const PlantDetails: React.FC<PlantDetailsProps> = ({ plantId, environmentId, onClose }) => {
   const [isEditingStage, setIsEditingStage] = useState(false);
   const [isEditingHistory, setIsEditingHistory] = useState<string | null>(null);
+  const [isAddingHistory, setIsAddingHistory] = useState(false);
   const [stageFormData, setStageFormData] = useState({
     currentStage: '',
   });
@@ -36,6 +38,7 @@ const PlantDetails: React.FC<PlantDetailsProps> = ({ plantId, environmentId, onC
   const [updatePlantStage] = useMutation(UpdatePlantStageDocument);
   const [updatePlantHistory] = useMutation(UpdatePlantHistoryDocument);
   const [deletePlantHistory] = useMutation(DeletePlantHistoryDocument);
+  const [createPlantHistory] = useMutation(CreatePlantHistoryDocument);
 
   const plant = plantData?.getPlantById;
   const plantHistory = historyData?.getPlantHistory || [];
@@ -122,6 +125,42 @@ const PlantDetails: React.FC<PlantDetailsProps> = ({ plantId, environmentId, onC
   const cancelEditingHistory = () => {
     setIsEditingHistory(null);
     setHistoryFormData({ stage: '', notes: '' });
+  };
+
+  const startAddingHistory = () => {
+    setIsAddingHistory(true);
+    setHistoryFormData({ 
+      stage: plant?.currentStage || 'germination', // Pre-select current stage
+      notes: '' 
+    });
+  };
+
+  const cancelAddingHistory = () => {
+    setIsAddingHistory(false);
+    setHistoryFormData({ stage: '', notes: '' });
+  };
+
+  const handleCreateHistory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!historyFormData.stage) return;
+
+    try {
+      await createPlantHistory({
+        variables: {
+          plantId,
+          environmentId,
+          input: {
+            stage: historyFormData.stage,
+            notes: historyFormData.notes || undefined,
+          },
+        },
+      });
+      setHistoryFormData({ stage: '', notes: '' });
+      setIsAddingHistory(false);
+      refetchHistory();
+    } catch (error) {
+      console.error('Error creating plant history:', error);
+    }
   };
 
   if (plantLoading) return <div className="text-center py-4">Loading...</div>;
@@ -248,7 +287,71 @@ const PlantDetails: React.FC<PlantDetailsProps> = ({ plantId, environmentId, onC
 
         {/* Plant History */}
         <div className="border-t pt-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Plant History</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium text-gray-900">Plant History</h3>
+            <button
+              onClick={startAddingHistory}
+              className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            >
+              + Add History Entry
+            </button>
+          </div>
+
+          {/* Add History Entry Form */}
+          {isAddingHistory && (
+            <form onSubmit={handleCreateHistory} className="mb-6 p-4 border border-gray-200 rounded-md bg-green-50">
+              <h4 className="text-md font-medium text-gray-800 mb-3">Add New History Entry</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="newStage" className="block text-sm font-medium text-gray-700 mb-1">
+                    Stage *
+                  </label>
+                  <select
+                    id="newStage"
+                    value={historyFormData.stage}
+                    onChange={(e) => setHistoryFormData({ ...historyFormData, stage: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    required
+                  >
+                    {plantStages.map(stage => (
+                      <option key={stage.value} value={stage.value}>{stage.label}</option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Pre-selected based on current plant stage: <strong>{plantStages.find(s => s.value === plant?.currentStage)?.label || 'Not set'}</strong>
+                  </p>
+                </div>
+                <div>
+                  <label htmlFor="newNotes" className="block text-sm font-medium text-gray-700 mb-1">
+                    Notes
+                  </label>
+                  <input
+                    type="text"
+                    id="newNotes"
+                    value={historyFormData.notes}
+                    onChange={(e) => setHistoryFormData({ ...historyFormData, notes: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Optional notes about this stage change"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2 mt-4">
+                <button
+                  type="submit"
+                  className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                >
+                  Add History Entry
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelAddingHistory}
+                  className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
           
           {historyLoading ? (
             <div className="text-center py-4">Loading history...</div>
