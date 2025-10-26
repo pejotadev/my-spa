@@ -6,6 +6,7 @@ import { Light } from './entities/light.entity';
 import { Plant } from './entities/plant.entity';
 import { Genetics } from './entities/genetics.entity';
 import { PlantHistory } from './entities/plant-history.entity';
+import { PlantHistoryType } from './entities/plant-history-type.entity';
 import { CreateEnvironmentDto } from './dto/create-environment.dto';
 import { UpdateEnvironmentDto } from './dto/update-environment.dto';
 import { CreateLightDto } from './dto/create-light.dto';
@@ -17,6 +18,8 @@ import { UpdateGeneticsDto } from './dto/update-genetics.dto';
 import { CreatePlantHistoryDto } from './dto/create-plant-history.dto';
 import { UpdatePlantStageDto } from './dto/update-plant-stage.dto';
 import { UpdatePlantHistoryDto } from './dto/update-plant-history.dto';
+import { CreatePlantHistoryTypeDto } from './dto/plant-history-type.dto';
+import { UpdatePlantHistoryTypeDto } from './dto/plant-history-type.dto';
 
 @Injectable()
 export class GardenService {
@@ -264,8 +267,11 @@ export class GardenService {
     }
 
     return EnvironmentRepository.createPlantHistory({
-      ...data,
       plantId,
+      stage: data.stage,
+      typeId: data.typeId,
+      notes: data.notes,
+      data: data.data,
     });
   }
 
@@ -307,6 +313,7 @@ export class GardenService {
     await EnvironmentRepository.createPlantHistory({
       plantId,
       stage: data.currentStage,
+      typeId: 'type1', // Default to 'notes' type
       notes: `Stage changed to ${data.currentStage}`,
     });
 
@@ -356,5 +363,60 @@ export class GardenService {
 
     await EnvironmentRepository.deletePlantHistory(historyId);
     return true;
+  }
+
+  // Plant History Type methods
+  async getPlantHistoryTypes(): Promise<PlantHistoryType[]> {
+    return this.prisma.plantHistoryType.findMany({
+      where: { isActive: true },
+      orderBy: { displayName: 'asc' },
+    });
+  }
+
+  async getPlantHistoryType(id: string): Promise<PlantHistoryType> {
+    const historyType = await this.prisma.plantHistoryType.findUnique({
+      where: { id },
+    });
+
+    if (!historyType) {
+      throw new NotFoundException('Plant history type not found');
+    }
+
+    return historyType;
+  }
+
+  async createPlantHistoryType(data: CreatePlantHistoryTypeDto): Promise<PlantHistoryType> {
+    return this.prisma.plantHistoryType.create({
+      data,
+    });
+  }
+
+  async updatePlantHistoryType(id: string, data: UpdatePlantHistoryTypeDto): Promise<PlantHistoryType> {
+    const historyType = await this.prisma.plantHistoryType.findUnique({
+      where: { id },
+    });
+
+    if (!historyType) {
+      throw new NotFoundException('Plant history type not found');
+    }
+
+    return this.prisma.plantHistoryType.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async deletePlantHistoryType(id: string): Promise<PlantHistoryType> {
+    const historyType = await this.prisma.plantHistoryType.findUnique({
+      where: { id },
+    });
+
+    if (!historyType) {
+      throw new NotFoundException('Plant history type not found');
+    }
+
+    return this.prisma.plantHistoryType.delete({
+      where: { id },
+    });
   }
 }

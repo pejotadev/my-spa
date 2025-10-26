@@ -153,14 +153,32 @@ model Plant {
   @@map("plants")
 }
 
+model PlantHistoryType {
+  id          String   @id @default(cuid())
+  name        String   @unique // water, fertilize, prune, transplant, etc.
+  displayName String   // Water, Fertilize, Prune, Transplant, etc.
+  description String?  // Description of this history type
+  fields      String   // JSON schema for additional fields (stored as text)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  histories PlantHistory[]
+
+  @@map("plant_history_types")
+}
+
 model PlantHistory {
   id        String   @id @default(cuid())
   plantId   String
   stage     String   // germination, clone_seedling, vegetative, flowering
-  notes     String?  // Observações sobre o estado
+  typeId    String   // Reference to PlantHistoryType
+  notes     String?  // General notes
+  data      String?  // Additional data specific to the history type (stored as JSON text)
   createdAt DateTime @default(now())
 
-  plant Plant @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  plant Plant           @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  type  PlantHistoryType @relation(fields: [typeId], references: [id], onDelete: Cascade)
 
   @@map("plant_history")
 }

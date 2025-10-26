@@ -234,10 +234,15 @@ export class EnvironmentRepository {
   static async createPlantHistory(data: {
     plantId: string;
     stage: string;
+    typeId: string;
     notes?: string;
+    data?: string;
   }): Promise<PlantHistory> {
     return EnvironmentRepository.prisma.plantHistory.create({
       data,
+      include: {
+        type: true,
+      },
     });
   }
 
@@ -245,6 +250,9 @@ export class EnvironmentRepository {
     return EnvironmentRepository.prisma.plantHistory.findMany({
       where: { plantId },
       orderBy: { createdAt: 'desc' },
+      include: {
+        type: true,
+      },
     });
   }
 
@@ -254,6 +262,9 @@ export class EnvironmentRepository {
         id,
         ...(plantId && { plantId })
       },
+      include: {
+        type: true,
+      },
     });
   }
 
@@ -261,12 +272,18 @@ export class EnvironmentRepository {
     return EnvironmentRepository.prisma.plantHistory.update({
       where: { id },
       data,
+      include: {
+        type: true,
+      },
     });
   }
 
   static async deletePlantHistory(id: string): Promise<PlantHistory> {
     return EnvironmentRepository.prisma.plantHistory.delete({
       where: { id },
+      include: {
+        type: true,
+      },
     });
   }
 }

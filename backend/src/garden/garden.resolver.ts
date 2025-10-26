@@ -6,6 +6,7 @@ import { Light } from './entities/light.entity';
 import { Plant } from './entities/plant.entity';
 import { Genetics } from './entities/genetics.entity';
 import { PlantHistory } from './entities/plant-history.entity';
+import { PlantHistoryType } from './entities/plant-history-type.entity';
 import { CreateEnvironmentDto } from './dto/create-environment.dto';
 import { UpdateEnvironmentDto } from './dto/update-environment.dto';
 import { CreateLightDto } from './dto/create-light.dto';
@@ -17,6 +18,8 @@ import { UpdateGeneticsDto } from './dto/update-genetics.dto';
 import { CreatePlantHistoryDto } from './dto/create-plant-history.dto';
 import { UpdatePlantStageDto } from './dto/update-plant-stage.dto';
 import { UpdatePlantHistoryDto } from './dto/update-plant-history.dto';
+import { CreatePlantHistoryTypeDto } from './dto/plant-history-type.dto';
+import { UpdatePlantHistoryTypeDto } from './dto/plant-history-type.dto';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
@@ -233,5 +236,40 @@ export class GardenResolver {
     @CurrentUser() user: any
   ): Promise<boolean> {
     return this.gardenService.deletePlantHistory(historyId, plantId, environmentId, user.userId);
+  }
+
+  // Plant History Type queries and mutations
+  @Query(() => [PlantHistoryType])
+  async getPlantHistoryTypes(): Promise<PlantHistoryType[]> {
+    return this.gardenService.getPlantHistoryTypes();
+  }
+
+  @Query(() => PlantHistoryType)
+  async getPlantHistoryType(
+    @Args('id', { type: () => ID }) id: string
+  ): Promise<PlantHistoryType> {
+    return this.gardenService.getPlantHistoryType(id);
+  }
+
+  @Mutation(() => PlantHistoryType)
+  async createPlantHistoryType(
+    @Args('input') input: CreatePlantHistoryTypeDto
+  ): Promise<PlantHistoryType> {
+    return this.gardenService.createPlantHistoryType(input);
+  }
+
+  @Mutation(() => PlantHistoryType)
+  async updatePlantHistoryType(
+    @Args('id', { type: () => ID }) id: string,
+    @Args('input') input: UpdatePlantHistoryTypeDto
+  ): Promise<PlantHistoryType> {
+    return this.gardenService.updatePlantHistoryType(id, input);
+  }
+
+  @Mutation(() => PlantHistoryType)
+  async deletePlantHistoryType(
+    @Args('id', { type: () => ID }) id: string
+  ): Promise<PlantHistoryType> {
+    return this.gardenService.deletePlantHistoryType(id);
   }
 }

@@ -10,8 +10,17 @@ export class CreatePlantHistoryDto {
   @IsIn(PLANT_STAGES)
   stage: string;
 
+  @Field()
+  @IsString()
+  typeId: string;
+
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  data?: string; // JSON string containing additional data
 }

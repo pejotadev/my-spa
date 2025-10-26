@@ -49,8 +49,18 @@ input CreatePlantDto {
 }
 
 input CreatePlantHistoryDto {
+  data: String
   notes: String
   stage: String!
+  typeId: String!
+}
+
+input CreatePlantHistoryTypeDto {
+  description: String
+  displayName: String!
+  fields: String!
+  isActive: Boolean! = true
+  name: String!
 }
 
 input CreateUserDto {
@@ -113,6 +123,7 @@ type Mutation {
   createLight(environmentId: ID!, input: CreateLightDto!): Light!
   createPlant(environmentId: ID!, input: CreatePlantDto!): Plant!
   createPlantHistory(environmentId: ID!, input: CreatePlantHistoryDto!, plantId: ID!): PlantHistory!
+  createPlantHistoryType(input: CreatePlantHistoryTypeDto!): PlantHistoryType!
   createUser(createUserDto: CreateUserDto!): User!
   deleteBooking(bookingId: String!, configurationId: String!): Boolean!
   deleteConfiguration(configurationId: String!): Boolean!
@@ -121,6 +132,7 @@ type Mutation {
   deleteLight(environmentId: ID!, lightId: ID!): Light!
   deletePlant(environmentId: ID!, plantId: ID!): Plant!
   deletePlantHistory(environmentId: ID!, historyId: ID!, plantId: ID!): Boolean!
+  deletePlantHistoryType(id: ID!): PlantHistoryType!
   login(loginDto: LoginDto!): AuthPayload!
   removeCategoryFromMe(categoryId: String!): ServiceProviderCategory!
   removeUser(id: String!): User!
@@ -131,6 +143,7 @@ type Mutation {
   updateLight(environmentId: ID!, input: UpdateLightDto!, lightId: ID!): Light!
   updatePlant(environmentId: ID!, input: UpdatePlantDto!, plantId: ID!): Plant!
   updatePlantHistory(environmentId: ID!, historyId: ID!, input: UpdatePlantHistoryDto!, plantId: ID!): PlantHistory!
+  updatePlantHistoryType(id: ID!, input: UpdatePlantHistoryTypeDto!): PlantHistoryType!
   updatePlantStage(environmentId: ID!, input: UpdatePlantStageDto!, plantId: ID!): Plant!
   updateUser(id: String!, updateUserDto: UpdateUserDto!): User!
 }
@@ -149,10 +162,24 @@ type Plant {
 
 type PlantHistory {
   createdAt: DateTime!
+  data: String
   id: ID!
   notes: String
   plantId: ID!
   stage: String!
+  type: PlantHistoryType
+  typeId: ID!
+}
+
+type PlantHistoryType {
+  createdAt: DateTime!
+  description: String
+  displayName: String!
+  fields: String!
+  id: ID!
+  isActive: Boolean!
+  name: String!
+  updatedAt: DateTime!
 }
 
 type Query {
@@ -171,6 +198,8 @@ type Query {
   getMyEnvironments: [Environment!]!
   getPlantById(environmentId: ID!, plantId: ID!): Plant!
   getPlantHistory(environmentId: ID!, plantId: ID!): [PlantHistory!]!
+  getPlantHistoryType(id: ID!): PlantHistoryType!
+  getPlantHistoryTypes: [PlantHistoryType!]!
   getPlantsByEnvironment(environmentId: ID!): [Plant!]!
   getProviderConfigurations(providerEmail: String!): String!
   getServiceProvidersByCategory(categoryId: String!): String!
@@ -217,8 +246,18 @@ input UpdatePlantDto {
 }
 
 input UpdatePlantHistoryDto {
+  data: String
   notes: String
   stage: String
+  typeId: String
+}
+
+input UpdatePlantHistoryTypeDto {
+  description: String
+  displayName: String
+  fields: String
+  isActive: Boolean
+  name: String
 }
 
 input UpdatePlantStageDto {

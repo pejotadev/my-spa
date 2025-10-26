@@ -14,5 +14,15 @@ export class UpdatePlantHistoryDto {
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
+  typeId?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
   notes?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  data?: string; // JSON string containing additional data
 }
