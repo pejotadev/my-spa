@@ -9,6 +9,8 @@ export const GET_PLANTS_BY_ENVIRONMENT = gql`
       geneticsId
       environmentId
       currentStage
+      harvest
+      harvestDate
       createdAt
       updatedAt
       genetics {
@@ -29,6 +31,8 @@ export const GET_PLANT_BY_ID = gql`
       geneticsId
       environmentId
       currentStage
+      harvest
+      harvestDate
       createdAt
       updatedAt
       genetics {
@@ -154,6 +158,28 @@ export const GET_PLANT_HISTORY_TYPES = gql`
       description
       fields
       isActive
+    }
+  }
+`;
+
+export const HARVEST_PLANT = gql`
+  mutation HarvestPlant($input: HarvestPlantDto!) {
+    harvestPlant(input: $input) {
+      id
+      code
+      description
+      geneticsId
+      environmentId
+      currentStage
+      harvest
+      harvestDate
+      createdAt
+      updatedAt
+      genetics {
+        id
+        name
+        description
+      }
     }
   }
 `;

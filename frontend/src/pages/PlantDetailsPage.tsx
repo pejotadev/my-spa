@@ -8,7 +8,8 @@ import {
   UpdatePlantHistoryDocument,
   DeletePlantHistoryDocument,
   CreatePlantHistoryDocument,
-  GetPlantHistoryTypesDocument
+  GetPlantHistoryTypesDocument,
+  HarvestPlantDocument
 } from '../generated/graphql';
 
 const PlantDetailsPage: React.FC = () => {
@@ -18,6 +19,7 @@ const PlantDetailsPage: React.FC = () => {
   const [isEditingStage, setIsEditingStage] = useState(false);
   const [isEditingHistory, setIsEditingHistory] = useState<string | null>(null);
   const [isAddingHistory, setIsAddingHistory] = useState(false);
+  const [activeTab, setActiveTab] = useState<'details' | 'harvest'>('details');
   const nutrientMixesRef = useRef<HTMLDivElement>(null);
 
 
@@ -405,6 +407,7 @@ const PlantDetailsPage: React.FC = () => {
   const [updatePlantHistory] = useMutation(UpdatePlantHistoryDocument);
   const [deletePlantHistory] = useMutation(DeletePlantHistoryDocument);
   const [createPlantHistory] = useMutation(CreatePlantHistoryDocument);
+  const [harvestPlant] = useMutation(HarvestPlantDocument);
 
   const plant = plantData?.getPlantById;
   const plantHistory = historyData?.getPlantHistory || [];
@@ -574,6 +577,28 @@ const PlantDetailsPage: React.FC = () => {
     navigate(-1); // Go back to previous page
   };
 
+  const handleHarvest = async () => {
+    if (!plantId || !environmentId) return;
+    
+    if (window.confirm('Are you sure you want to harvest this plant? This action cannot be undone.')) {
+      try {
+        await harvestPlant({
+          variables: {
+            input: {
+              plantId,
+              environmentId
+            }
+          }
+        });
+        // Refetch plant data to update the UI
+        window.location.reload(); // Simple refresh to show updated data
+      } catch (error) {
+        console.error('Error harvesting plant:', error);
+        alert('Failed to harvest plant. Please try again.');
+      }
+    }
+  };
+
   if (plantLoading) return <div className="text-center py-8">Loading...</div>;
 
   if (!plant) return (
@@ -607,7 +632,38 @@ const PlantDetailsPage: React.FC = () => {
           <p className="mt-2 text-gray-600">Manage and track your plant's development</p>
         </div>
 
-        {/* Plant Information */}
+        {/* Tabs */}
+        <div className="mb-8">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8">
+              <button
+                onClick={() => setActiveTab('details')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'details'
+                    ? 'border-green-500 text-green-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Details
+              </button>
+              <button
+                onClick={() => setActiveTab('harvest')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'harvest'
+                    ? 'border-green-500 text-green-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Harvest
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'details' && (
+          <>
+            {/* Plant Information */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Plant Information</h3>
@@ -647,6 +703,19 @@ const PlantDetailsPage: React.FC = () => {
                   >
                     Change
                   </button>
+                  {plant.currentStage === 'flowering' && !plant.harvest && (
+                    <button
+                      onClick={handleHarvest}
+                      className="ml-2 inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                    >
+                      🌾 Harvest
+                    </button>
+                  )}
+                  {plant.harvest && (
+                    <span className="ml-2 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                      ✅ Harvested
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -663,6 +732,12 @@ const PlantDetailsPage: React.FC = () => {
                 <span className="text-gray-600">Last Updated:</span>
                 <span className="font-medium">{new Date(plant.updatedAt).toLocaleDateString()}</span>
               </div>
+              {plant.harvest && plant.harvestDate && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Harvested:</span>
+                  <span className="font-medium text-green-600">{new Date(plant.harvestDate).toLocaleDateString()}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1359,6 +1434,95 @@ const PlantDetailsPage: React.FC = () => {
             )}
           </div>
         </div>
+          </>
+        )}
+
+        {activeTab === 'harvest' && (
+          <div className="bg-white rounded-lg shadow">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">Harvest Information</h3>
+            </div>
+            <div className="p-6">
+              {plant.harvest ? (
+                <div className="space-y-6">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <span className="text-green-400 text-2xl">✅</span>
+                      </div>
+                      <div className="ml-3">
+                        <h4 className="text-lg font-medium text-green-800">Plant Harvested</h4>
+                        <p className="text-green-700">
+                          This plant was successfully harvested on {plant.harvestDate ? new Date(plant.harvestDate).toLocaleDateString() : 'Unknown date'}.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h5 className="font-medium text-gray-900 mb-2">Harvest Details</h5>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Harvest Date:</span>
+                          <span className="font-medium">{plant.harvestDate ? new Date(plant.harvestDate).toLocaleDateString() : 'N/A'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Stage at Harvest:</span>
+                          <span className="font-medium">{plant.currentStage || 'N/A'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Plant Code:</span>
+                          <span className="font-medium">{plant.code}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h5 className="font-medium text-gray-900 mb-2">Plant Information</h5>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Genetics:</span>
+                          <span className="font-medium">{plant.genetics?.name || 'Unknown'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Created:</span>
+                          <span className="font-medium">{new Date(plant.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Days to Harvest:</span>
+                          <span className="font-medium">
+                            {plant.harvestDate ? 
+                              Math.ceil((new Date(plant.harvestDate).getTime() - new Date(plant.createdAt).getTime()) / (1000 * 60 * 60 * 24)) 
+                              : 'N/A'} days
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="text-gray-400 text-6xl mb-4">🌱</div>
+                  <h4 className="text-lg font-medium text-gray-900 mb-2">Plant Not Yet Harvested</h4>
+                  <p className="text-gray-600 mb-6">
+                    This plant is still growing. Harvest will be available when the plant reaches the flowering stage.
+                  </p>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto">
+                    <p className="text-blue-800 text-sm">
+                      <strong>Current Stage:</strong> {plant.currentStage ? plantStages.find(s => s.value === plant.currentStage)?.label || plant.currentStage : 'Not set'}
+                    </p>
+                    {plant.currentStage === 'flowering' && (
+                      <p className="text-blue-800 text-sm mt-2">
+                        🌾 Ready for harvest! Use the "Harvest" button in the Details tab.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
