@@ -162,23 +162,26 @@ export const GET_PLANT_HISTORY_TYPES = gql`
   }
 `;
 
-export const HARVEST_PLANT = gql`
-  mutation HarvestPlant($input: HarvestPlantDto!) {
-    harvestPlant(input: $input) {
+export const CREATE_HARVEST = gql`
+  mutation CreateHarvest($input: CreateHarvestDto!) {
+    createHarvest(input: $input) {
       id
-      code
-      description
-      geneticsId
-      environmentId
-      currentStage
-      harvest
+      plantId
+      weight
+      notes
       harvestDate
       createdAt
       updatedAt
-      genetics {
+      plant {
         id
-        name
-        description
+        code
+        currentStage
+        harvest
+        harvestDate
+        genetics {
+          id
+          name
+        }
       }
     }
   }

@@ -57,6 +57,13 @@ export type CreateGeneticsDto = {
   name: Scalars['String']['input'];
 };
 
+export type CreateHarvestDto = {
+  environmentId: Scalars['String']['input'];
+  notes?: InputMaybe<Scalars['String']['input']>;
+  plantId: Scalars['String']['input'];
+  weight?: InputMaybe<Scalars['Float']['input']>;
+};
+
 export type CreateLightDto = {
   type: Scalars['String']['input'];
   watts?: InputMaybe<Scalars['Float']['input']>;
@@ -113,9 +120,16 @@ export type Genetics = {
   updatedAt: Scalars['DateTime']['output'];
 };
 
-export type HarvestPlantDto = {
-  environmentId: Scalars['String']['input'];
-  plantId: Scalars['String']['input'];
+export type Harvest = {
+  __typename?: 'Harvest';
+  createdAt: Scalars['DateTime']['output'];
+  harvestDate: Scalars['DateTime']['output'];
+  id: Scalars['ID']['output'];
+  notes?: Maybe<Scalars['String']['output']>;
+  plant?: Maybe<Plant>;
+  plantId: Scalars['ID']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+  weight?: Maybe<Scalars['Float']['output']>;
 };
 
 export type Light = {
@@ -143,6 +157,7 @@ export type Mutation = {
   createConfiguration: Scalars['String']['output'];
   createEnvironment: Environment;
   createGenetics: Genetics;
+  createHarvest: Harvest;
   createLight: Light;
   createPlant: Plant;
   createPlantHistory: PlantHistory;
@@ -156,7 +171,6 @@ export type Mutation = {
   deletePlant: Plant;
   deletePlantHistory: Scalars['Boolean']['output'];
   deletePlantHistoryType: PlantHistoryType;
-  harvestPlant: Plant;
   login: AuthPayload;
   removeCategoryFromMe: ServiceProviderCategory;
   removeUser: User;
@@ -217,6 +231,11 @@ export type MutationCreateEnvironmentArgs = {
 
 export type MutationCreateGeneticsArgs = {
   input: CreateGeneticsDto;
+};
+
+
+export type MutationCreateHarvestArgs = {
+  input: CreateHarvestDto;
 };
 
 
@@ -291,11 +310,6 @@ export type MutationDeletePlantHistoryArgs = {
 
 export type MutationDeletePlantHistoryTypeArgs = {
   id: Scalars['ID']['input'];
-};
-
-
-export type MutationHarvestPlantArgs = {
-  input: HarvestPlantDto;
 };
 
 
@@ -948,12 +962,12 @@ export type GetPlantHistoryTypesQueryVariables = Exact<{ [key: string]: never; }
 
 export type GetPlantHistoryTypesQuery = { __typename?: 'Query', getPlantHistoryTypes: Array<{ __typename?: 'PlantHistoryType', id: string, name: string, displayName: string, description?: string | null, fields: string, isActive: boolean }> };
 
-export type HarvestPlantMutationVariables = Exact<{
-  input: HarvestPlantDto;
+export type CreateHarvestMutationVariables = Exact<{
+  input: CreateHarvestDto;
 }>;
 
 
-export type HarvestPlantMutation = { __typename?: 'Mutation', harvestPlant: { __typename?: 'Plant', id: string, code: string, description?: string | null, geneticsId: string, environmentId: string, currentStage?: string | null, harvest: boolean, harvestDate?: any | null, createdAt: any, updatedAt: any, genetics?: { __typename?: 'Genetics', id: string, name: string, description?: string | null } | null } };
+export type CreateHarvestMutation = { __typename?: 'Mutation', createHarvest: { __typename?: 'Harvest', id: string, plantId: string, weight?: number | null, notes?: string | null, harvestDate: any, createdAt: any, updatedAt: any, plant?: { __typename?: 'Plant', id: string, code: string, currentStage?: string | null, harvest: boolean, harvestDate?: any | null, genetics?: { __typename?: 'Genetics', id: string, name: string } | null } | null } };
 
 
 export const GetCategoriesDocument = gql`
@@ -2913,50 +2927,53 @@ export type GetPlantHistoryTypesQueryResult = Apollo.QueryResult<GetPlantHistory
 export function refetchGetPlantHistoryTypesQuery(variables?: GetPlantHistoryTypesQueryVariables) {
       return { query: GetPlantHistoryTypesDocument, variables: variables }
     }
-export const HarvestPlantDocument = gql`
-    mutation HarvestPlant($input: HarvestPlantDto!) {
-  harvestPlant(input: $input) {
+export const CreateHarvestDocument = gql`
+    mutation CreateHarvest($input: CreateHarvestDto!) {
+  createHarvest(input: $input) {
     id
-    code
-    description
-    geneticsId
-    environmentId
-    currentStage
-    harvest
+    plantId
+    weight
+    notes
     harvestDate
     createdAt
     updatedAt
-    genetics {
+    plant {
       id
-      name
-      description
+      code
+      currentStage
+      harvest
+      harvestDate
+      genetics {
+        id
+        name
+      }
     }
   }
 }
     `;
-export type HarvestPlantMutationFn = Apollo.MutationFunction<HarvestPlantMutation, HarvestPlantMutationVariables>;
+export type CreateHarvestMutationFn = Apollo.MutationFunction<CreateHarvestMutation, CreateHarvestMutationVariables>;
 
 /**
- * __useHarvestPlantMutation__
+ * __useCreateHarvestMutation__
  *
- * To run a mutation, you first call `useHarvestPlantMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useHarvestPlantMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useCreateHarvestMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateHarvestMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [harvestPlantMutation, { data, loading, error }] = useHarvestPlantMutation({
+ * const [createHarvestMutation, { data, loading, error }] = useCreateHarvestMutation({
  *   variables: {
  *      input: // value for 'input'
  *   },
  * });
  */
-export function useHarvestPlantMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<HarvestPlantMutation, HarvestPlantMutationVariables>) {
+export function useCreateHarvestMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CreateHarvestMutation, CreateHarvestMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return ApolloReactHooks.useMutation<HarvestPlantMutation, HarvestPlantMutationVariables>(HarvestPlantDocument, options);
+        return ApolloReactHooks.useMutation<CreateHarvestMutation, CreateHarvestMutationVariables>(CreateHarvestDocument, options);
       }
-export type HarvestPlantMutationHookResult = ReturnType<typeof useHarvestPlantMutation>;
-export type HarvestPlantMutationResult = Apollo.MutationResult<HarvestPlantMutation>;
-export type HarvestPlantMutationOptions = Apollo.BaseMutationOptions<HarvestPlantMutation, HarvestPlantMutationVariables>;
+export type CreateHarvestMutationHookResult = ReturnType<typeof useCreateHarvestMutation>;
+export type CreateHarvestMutationResult = Apollo.MutationResult<CreateHarvestMutation>;
+export type CreateHarvestMutationOptions = Apollo.BaseMutationOptions<CreateHarvestMutation, CreateHarvestMutationVariables>;

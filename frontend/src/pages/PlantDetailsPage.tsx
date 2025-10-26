@@ -9,7 +9,7 @@ import {
   DeletePlantHistoryDocument,
   CreatePlantHistoryDocument,
   GetPlantHistoryTypesDocument,
-  HarvestPlantDocument
+  CreateHarvestDocument
 } from '../generated/graphql';
 
 const PlantDetailsPage: React.FC = () => {
@@ -20,6 +20,7 @@ const PlantDetailsPage: React.FC = () => {
   const [isEditingHistory, setIsEditingHistory] = useState<string | null>(null);
   const [isAddingHistory, setIsAddingHistory] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'harvest'>('details');
+  const [showHarvestModal, setShowHarvestModal] = useState(false);
   const nutrientMixesRef = useRef<HTMLDivElement>(null);
 
 
@@ -31,6 +32,10 @@ const PlantDetailsPage: React.FC = () => {
     notes: '',
     typeId: '',
     data: '',
+  });
+  const [harvestFormData, setHarvestFormData] = useState({
+    weight: '',
+    notes: '',
   });
 
   // Render nutrient mixes dynamically
@@ -407,7 +412,7 @@ const PlantDetailsPage: React.FC = () => {
   const [updatePlantHistory] = useMutation(UpdatePlantHistoryDocument);
   const [deletePlantHistory] = useMutation(DeletePlantHistoryDocument);
   const [createPlantHistory] = useMutation(CreatePlantHistoryDocument);
-  const [harvestPlant] = useMutation(HarvestPlantDocument);
+  const [createHarvest] = useMutation(CreateHarvestDocument);
 
   const plant = plantData?.getPlantById;
   const plantHistory = historyData?.getPlantHistory || [];
@@ -577,26 +582,39 @@ const PlantDetailsPage: React.FC = () => {
     navigate(-1); // Go back to previous page
   };
 
-  const handleHarvest = async () => {
+  const handleHarvest = () => {
+    setShowHarvestModal(true);
+    setHarvestFormData({ weight: '', notes: '' });
+  };
+
+  const handleCreateHarvest = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!plantId || !environmentId) return;
     
-    if (window.confirm('Are you sure you want to harvest this plant? This action cannot be undone.')) {
-      try {
-        await harvestPlant({
-          variables: {
-            input: {
-              plantId,
-              environmentId
-            }
+    try {
+      await createHarvest({
+        variables: {
+          input: {
+            plantId,
+            environmentId,
+            weight: harvestFormData.weight ? parseFloat(harvestFormData.weight) : undefined,
+            notes: harvestFormData.notes || undefined,
           }
-        });
-        // Refetch plant data to update the UI
-        window.location.reload(); // Simple refresh to show updated data
-      } catch (error) {
-        console.error('Error harvesting plant:', error);
-        alert('Failed to harvest plant. Please try again.');
-      }
+        }
+      });
+      setShowHarvestModal(false);
+      setHarvestFormData({ weight: '', notes: '' });
+      // Refetch plant data to update the UI
+      window.location.reload(); // Simple refresh to show updated data
+    } catch (error) {
+      console.error('Error creating harvest:', error);
+      alert('Failed to create harvest. Please try again.');
     }
+  };
+
+  const cancelHarvest = () => {
+    setShowHarvestModal(false);
+    setHarvestFormData({ weight: '', notes: '' });
   };
 
   if (plantLoading) return <div className="text-center py-8">Loading...</div>;
@@ -1524,6 +1542,67 @@ const PlantDetailsPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Harvest Modal */}
+      {showHarvestModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Harvest Plant</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Are you sure you want to harvest <strong>{plant.genetics?.name}</strong> ({plant.code})? 
+              This action cannot be undone.
+            </p>
+            
+            <form onSubmit={handleCreateHarvest} className="space-y-4">
+              <div>
+                <label htmlFor="harvestWeight" className="block text-sm font-medium text-gray-700 mb-1">
+                  Weight (grams)
+                </label>
+                <input
+                  type="number"
+                  id="harvestWeight"
+                  value={harvestFormData.weight}
+                  onChange={(e) => setHarvestFormData({ ...harvestFormData, weight: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="Enter weight in grams"
+                  step="0.1"
+                  min="0"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="harvestNotes" className="block text-sm font-medium text-gray-700 mb-1">
+                  Notes
+                </label>
+                <textarea
+                  id="harvestNotes"
+                  value={harvestFormData.notes}
+                  onChange={(e) => setHarvestFormData({ ...harvestFormData, notes: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="Optional harvest notes"
+                  rows={3}
+                />
+              </div>
+              
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  className="flex-1 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                >
+                  🌾 Harvest Plant
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelHarvest}
+                  className="flex-1 inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
