@@ -7,9 +7,7 @@ import {
   CreatePlantDocument, 
   DeletePlantDocument,
   GetAllGeneticsDocument,
-  CreateGeneticsDocument,
-  GetPlantHistoryDocument,
-  CreatePlantHistoryDocument
+  CreateGeneticsDocument
 } from '../generated/graphql';
 
 interface Plant {
@@ -34,13 +32,6 @@ interface Genetics {
   description?: string;
 }
 
-interface PlantHistory {
-  id: string;
-  plantId: string;
-  stage: string;
-  notes?: string;
-  createdAt: Date;
-}
 
 interface PlantManagerProps {
   environmentId: string;
@@ -49,9 +40,6 @@ interface PlantManagerProps {
 const PlantManager: React.FC<PlantManagerProps> = ({ environmentId }) => {
   const navigate = useNavigate();
   const [isCreating, setIsCreating] = useState(false);
-  // editingId removed as it's not used in current implementation
-  const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
-  // newGeneticsName removed as it's not used in current implementation
   const [formData, setFormData] = useState({
     description: '',
     geneticsId: '',
@@ -59,10 +47,6 @@ const PlantManager: React.FC<PlantManagerProps> = ({ environmentId }) => {
   const [customGeneticsName, setCustomGeneticsName] = useState('');
   const [showGeneticsModal, setShowGeneticsModal] = useState(false);
   const [pendingGeneticsName, setPendingGeneticsName] = useState('');
-  const [historyFormData, setHistoryFormData] = useState({
-    stage: 'germination',
-    notes: '',
-  });
 
   const { data: plantsData, loading: plantsLoading, error: plantsError, refetch: refetchPlants } = useQuery(GetPlantsByEnvironmentDocument, {
     variables: { environmentId },
@@ -70,23 +54,12 @@ const PlantManager: React.FC<PlantManagerProps> = ({ environmentId }) => {
 
   const { data: geneticsData, loading: geneticsLoading, refetch: refetchGenetics } = useQuery(GetAllGeneticsDocument);
 
-  const { data: historyData, loading: historyLoading, refetch: refetchHistory } = useQuery(GetPlantHistoryDocument, {
-    variables: { 
-      plantId: selectedPlantId || '', 
-      environmentId 
-    },
-    skip: !selectedPlantId,
-  });
-
   const [createPlant] = useMutation(CreatePlantDocument);
-  // updatePlant mutation available but not used in current implementation
   const [deletePlant] = useMutation(DeletePlantDocument);
   const [createGenetics] = useMutation(CreateGeneticsDocument);
-  const [createPlantHistory] = useMutation(CreatePlantHistoryDocument);
 
   const plants: Plant[] = plantsData?.getPlantsByEnvironment || [];
   const genetics: Genetics[] = geneticsData?.getAllGenetics || [];
-  const plantHistory: PlantHistory[] = historyData?.getPlantHistory || [];
 
   const plantStages = [
     { value: 'germination', label: 'Germination' },
@@ -141,28 +114,6 @@ const PlantManager: React.FC<PlantManagerProps> = ({ environmentId }) => {
     }
   };
 
-  const handleCreateHistory = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedPlantId || !historyFormData.stage) return;
-
-    try {
-      await createPlantHistory({
-        variables: {
-          plantId: selectedPlantId,
-          environmentId,
-          input: {
-            stage: historyFormData.stage,
-            notes: historyFormData.notes || undefined,
-          },
-        },
-      });
-      setHistoryFormData({ stage: 'germination', notes: '' });
-      refetchHistory();
-    } catch (error) {
-      console.error('Error creating plant history:', error);
-    }
-  };
-
   const handleDeletePlant = async (plantId: string) => {
     if (window.confirm('Are you sure you want to delete this plant?')) {
       try {
@@ -170,9 +121,6 @@ const PlantManager: React.FC<PlantManagerProps> = ({ environmentId }) => {
           variables: { plantId, environmentId },
         });
         refetchPlants();
-        if (selectedPlantId === plantId) {
-          setSelectedPlantId(null);
-        }
       } catch (error) {
         console.error('Error deleting plant:', error);
       }
@@ -348,12 +296,6 @@ const PlantManager: React.FC<PlantManagerProps> = ({ environmentId }) => {
                   View Details
                 </button>
                 <button
-                  onClick={() => setSelectedPlantId(plant.id)}
-                  className="text-green-600 hover:text-green-800 text-sm font-medium"
-                >
-                  Quick History
-                </button>
-                <button
                   onClick={() => handleDeletePlant(plant.id)}
                   className="text-red-600 hover:text-red-800 text-sm font-medium"
                 >
@@ -367,91 +309,6 @@ const PlantManager: React.FC<PlantManagerProps> = ({ environmentId }) => {
 
       {plants.length === 0 && (
         <p className="text-gray-600 text-center py-8">No plants added to this environment yet.</p>
-      )}
-
-      {/* Plant History Section */}
-      {selectedPlantId && (
-        <div className="mt-8 border-t pt-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-gray-900">Plant History</h3>
-            <button
-              onClick={() => setSelectedPlantId(null)}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              Close
-            </button>
-          </div>
-
-          {/* Add History Form */}
-          <form onSubmit={handleCreateHistory} className="mb-4 p-4 border border-gray-200 rounded-md bg-gray-50">
-            <h4 className="text-md font-medium text-gray-800 mb-3">Add History Entry</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="stage" className="block text-sm font-medium text-gray-700 mb-1">
-                  Stage *
-                </label>
-                <select
-                  id="stage"
-                  value={historyFormData.stage}
-                  onChange={(e) => setHistoryFormData({ ...historyFormData, stage: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  required
-                >
-                  {plantStages.map(stage => (
-                    <option key={stage.value} value={stage.value}>{stage.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
-                  Notes
-                </label>
-                <input
-                  type="text"
-                  id="notes"
-                  value={historyFormData.notes}
-                  onChange={(e) => setHistoryFormData({ ...historyFormData, notes: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Optional notes"
-                />
-              </div>
-            </div>
-            <button
-              type="submit"
-              className="mt-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-            >
-              Add History Entry
-            </button>
-          </form>
-
-          {/* History List */}
-          {historyLoading ? (
-            <div className="text-center py-4">Loading history...</div>
-          ) : (
-            <div className="space-y-3">
-              {plantHistory.map((entry) => (
-                <div key={entry.id} className="bg-white border border-gray-200 rounded-md p-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        {plantStages.find(s => s.value === entry.stage)?.label || entry.stage}
-                      </p>
-                      {entry.notes && (
-                        <p className="text-sm text-gray-600 mt-1">{entry.notes}</p>
-                      )}
-                    </div>
-                    <p className="text-xs text-gray-400">
-                      {new Date(entry.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              {plantHistory.length === 0 && (
-                <p className="text-gray-600 text-center py-4">No history entries yet.</p>
-              )}
-            </div>
-          )}
-        </div>
       )}
 
       {/* Genetics Creation Modal */}
