@@ -114,7 +114,14 @@ export const GET_PLANT_HISTORY = gql`
       plantId
       stage
       notes
+      data
+      typeId
       createdAt
+      type {
+        id
+        name
+        displayName
+      }
     }
   }
 `;
@@ -126,7 +133,27 @@ export const CREATE_PLANT_HISTORY = gql`
       plantId
       stage
       notes
+      data
+      typeId
       createdAt
+      type {
+        id
+        name
+        displayName
+      }
+    }
+  }
+`;
+
+export const GET_PLANT_HISTORY_TYPES = gql`
+  query GetPlantHistoryTypes {
+    getPlantHistoryTypes {
+      id
+      name
+      displayName
+      description
+      fields
+      isActive
     }
   }
 `;

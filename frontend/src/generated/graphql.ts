@@ -68,8 +68,18 @@ export type CreatePlantDto = {
 };
 
 export type CreatePlantHistoryDto = {
+  data?: InputMaybe<Scalars['String']['input']>;
   notes?: InputMaybe<Scalars['String']['input']>;
   stage: Scalars['String']['input'];
+  typeId: Scalars['String']['input'];
+};
+
+export type CreatePlantHistoryTypeDto = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  displayName: Scalars['String']['input'];
+  fields: Scalars['String']['input'];
+  isActive?: Scalars['Boolean']['input'];
+  name: Scalars['String']['input'];
 };
 
 export type CreateUserDto = {
@@ -131,6 +141,7 @@ export type Mutation = {
   createLight: Light;
   createPlant: Plant;
   createPlantHistory: PlantHistory;
+  createPlantHistoryType: PlantHistoryType;
   createUser: User;
   deleteBooking: Scalars['Boolean']['output'];
   deleteConfiguration: Scalars['Boolean']['output'];
@@ -139,6 +150,7 @@ export type Mutation = {
   deleteLight: Light;
   deletePlant: Plant;
   deletePlantHistory: Scalars['Boolean']['output'];
+  deletePlantHistoryType: PlantHistoryType;
   login: AuthPayload;
   removeCategoryFromMe: ServiceProviderCategory;
   removeUser: User;
@@ -149,6 +161,7 @@ export type Mutation = {
   updateLight: Light;
   updatePlant: Plant;
   updatePlantHistory: PlantHistory;
+  updatePlantHistoryType: PlantHistoryType;
   updatePlantStage: Plant;
   updateUser: User;
 };
@@ -220,6 +233,11 @@ export type MutationCreatePlantHistoryArgs = {
 };
 
 
+export type MutationCreatePlantHistoryTypeArgs = {
+  input: CreatePlantHistoryTypeDto;
+};
+
+
 export type MutationCreateUserArgs = {
   createUserDto: CreateUserDto;
 };
@@ -262,6 +280,11 @@ export type MutationDeletePlantHistoryArgs = {
   environmentId: Scalars['ID']['input'];
   historyId: Scalars['ID']['input'];
   plantId: Scalars['ID']['input'];
+};
+
+
+export type MutationDeletePlantHistoryTypeArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -327,6 +350,12 @@ export type MutationUpdatePlantHistoryArgs = {
 };
 
 
+export type MutationUpdatePlantHistoryTypeArgs = {
+  id: Scalars['ID']['input'];
+  input: UpdatePlantHistoryTypeDto;
+};
+
+
 export type MutationUpdatePlantStageArgs = {
   environmentId: Scalars['ID']['input'];
   input: UpdatePlantStageDto;
@@ -355,10 +384,25 @@ export type Plant = {
 export type PlantHistory = {
   __typename?: 'PlantHistory';
   createdAt: Scalars['DateTime']['output'];
+  data?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   notes?: Maybe<Scalars['String']['output']>;
   plantId: Scalars['ID']['output'];
   stage: Scalars['String']['output'];
+  type?: Maybe<PlantHistoryType>;
+  typeId: Scalars['ID']['output'];
+};
+
+export type PlantHistoryType = {
+  __typename?: 'PlantHistoryType';
+  createdAt: Scalars['DateTime']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  displayName: Scalars['String']['output'];
+  fields: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  isActive: Scalars['Boolean']['output'];
+  name: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
 };
 
 export type Query = {
@@ -378,6 +422,8 @@ export type Query = {
   getMyEnvironments: Array<Environment>;
   getPlantById: Plant;
   getPlantHistory: Array<PlantHistory>;
+  getPlantHistoryType: PlantHistoryType;
+  getPlantHistoryTypes: Array<PlantHistoryType>;
   getPlantsByEnvironment: Array<Plant>;
   getProviderConfigurations: Scalars['String']['output'];
   getServiceProvidersByCategory: Scalars['String']['output'];
@@ -450,6 +496,11 @@ export type QueryGetPlantHistoryArgs = {
 };
 
 
+export type QueryGetPlantHistoryTypeArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type QueryGetPlantsByEnvironmentArgs = {
   environmentId: Scalars['ID']['input'];
 };
@@ -508,8 +559,18 @@ export type UpdatePlantDto = {
 };
 
 export type UpdatePlantHistoryDto = {
+  data?: InputMaybe<Scalars['String']['input']>;
   notes?: InputMaybe<Scalars['String']['input']>;
   stage?: InputMaybe<Scalars['String']['input']>;
+  typeId?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UpdatePlantHistoryTypeDto = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  displayName?: InputMaybe<Scalars['String']['input']>;
+  fields?: InputMaybe<Scalars['String']['input']>;
+  isActive?: InputMaybe<Scalars['Boolean']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type UpdatePlantStageDto = {
@@ -858,7 +919,7 @@ export type GetPlantHistoryQueryVariables = Exact<{
 }>;
 
 
-export type GetPlantHistoryQuery = { __typename?: 'Query', getPlantHistory: Array<{ __typename?: 'PlantHistory', id: string, plantId: string, stage: string, notes?: string | null, createdAt: any }> };
+export type GetPlantHistoryQuery = { __typename?: 'Query', getPlantHistory: Array<{ __typename?: 'PlantHistory', id: string, plantId: string, stage: string, notes?: string | null, data?: string | null, typeId: string, createdAt: any, type?: { __typename?: 'PlantHistoryType', id: string, name: string, displayName: string } | null }> };
 
 export type CreatePlantHistoryMutationVariables = Exact<{
   plantId: Scalars['ID']['input'];
@@ -867,7 +928,12 @@ export type CreatePlantHistoryMutationVariables = Exact<{
 }>;
 
 
-export type CreatePlantHistoryMutation = { __typename?: 'Mutation', createPlantHistory: { __typename?: 'PlantHistory', id: string, plantId: string, stage: string, notes?: string | null, createdAt: any } };
+export type CreatePlantHistoryMutation = { __typename?: 'Mutation', createPlantHistory: { __typename?: 'PlantHistory', id: string, plantId: string, stage: string, notes?: string | null, data?: string | null, typeId: string, createdAt: any, type?: { __typename?: 'PlantHistoryType', id: string, name: string, displayName: string } | null } };
+
+export type GetPlantHistoryTypesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetPlantHistoryTypesQuery = { __typename?: 'Query', getPlantHistoryTypes: Array<{ __typename?: 'PlantHistoryType', id: string, name: string, displayName: string, description?: string | null, fields: string, isActive: boolean }> };
 
 
 export const GetCategoriesDocument = gql`
@@ -2678,7 +2744,14 @@ export const GetPlantHistoryDocument = gql`
     plantId
     stage
     notes
+    data
+    typeId
     createdAt
+    type {
+      id
+      name
+      displayName
+    }
   }
 }
     `;
@@ -2730,7 +2803,14 @@ export const CreatePlantHistoryDocument = gql`
     plantId
     stage
     notes
+    data
+    typeId
     createdAt
+    type {
+      id
+      name
+      displayName
+    }
   }
 }
     `;
@@ -2762,3 +2842,50 @@ export function useCreatePlantHistoryMutation(baseOptions?: ApolloReactHooks.Mut
 export type CreatePlantHistoryMutationHookResult = ReturnType<typeof useCreatePlantHistoryMutation>;
 export type CreatePlantHistoryMutationResult = Apollo.MutationResult<CreatePlantHistoryMutation>;
 export type CreatePlantHistoryMutationOptions = Apollo.BaseMutationOptions<CreatePlantHistoryMutation, CreatePlantHistoryMutationVariables>;
+export const GetPlantHistoryTypesDocument = gql`
+    query GetPlantHistoryTypes {
+  getPlantHistoryTypes {
+    id
+    name
+    displayName
+    description
+    fields
+    isActive
+  }
+}
+    `;
+
+/**
+ * __useGetPlantHistoryTypesQuery__
+ *
+ * To run a query within a React component, call `useGetPlantHistoryTypesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetPlantHistoryTypesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetPlantHistoryTypesQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetPlantHistoryTypesQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<GetPlantHistoryTypesQuery, GetPlantHistoryTypesQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetPlantHistoryTypesQuery, GetPlantHistoryTypesQueryVariables>(GetPlantHistoryTypesDocument, options);
+      }
+export function useGetPlantHistoryTypesLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetPlantHistoryTypesQuery, GetPlantHistoryTypesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetPlantHistoryTypesQuery, GetPlantHistoryTypesQueryVariables>(GetPlantHistoryTypesDocument, options);
+        }
+export function useGetPlantHistoryTypesSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetPlantHistoryTypesQuery, GetPlantHistoryTypesQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetPlantHistoryTypesQuery, GetPlantHistoryTypesQueryVariables>(GetPlantHistoryTypesDocument, options);
+        }
+export type GetPlantHistoryTypesQueryHookResult = ReturnType<typeof useGetPlantHistoryTypesQuery>;
+export type GetPlantHistoryTypesLazyQueryHookResult = ReturnType<typeof useGetPlantHistoryTypesLazyQuery>;
+export type GetPlantHistoryTypesSuspenseQueryHookResult = ReturnType<typeof useGetPlantHistoryTypesSuspenseQuery>;
+export type GetPlantHistoryTypesQueryResult = Apollo.QueryResult<GetPlantHistoryTypesQuery, GetPlantHistoryTypesQueryVariables>;
+export function refetchGetPlantHistoryTypesQuery(variables?: GetPlantHistoryTypesQueryVariables) {
+      return { query: GetPlantHistoryTypesDocument, variables: variables }
+    }

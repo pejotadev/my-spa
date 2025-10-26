@@ -6,7 +6,9 @@ import {
   GetPlantHistoryDocument,
   UpdatePlantStageDocument,
   UpdatePlantHistoryDocument,
-  DeletePlantHistoryDocument
+  DeletePlantHistoryDocument,
+  CreatePlantHistoryDocument,
+  GetPlantHistoryTypesDocument
 } from '../generated/graphql';
 
 const PlantDetailsPage: React.FC = () => {
@@ -15,12 +17,15 @@ const PlantDetailsPage: React.FC = () => {
   
   const [isEditingStage, setIsEditingStage] = useState(false);
   const [isEditingHistory, setIsEditingHistory] = useState<string | null>(null);
+  const [isAddingHistory, setIsAddingHistory] = useState(false);
   const [stageFormData, setStageFormData] = useState({
     currentStage: '',
   });
   const [historyFormData, setHistoryFormData] = useState({
     stage: '',
     notes: '',
+    typeId: '',
+    data: '',
   });
 
   const { data: plantData, loading: plantLoading, refetch: refetchPlant } = useQuery(GetPlantByIdDocument, {
@@ -33,12 +38,16 @@ const PlantDetailsPage: React.FC = () => {
     skip: !plantId || !environmentId,
   });
 
+  const { data: historyTypesData } = useQuery(GetPlantHistoryTypesDocument);
+
   const [updatePlantStage] = useMutation(UpdatePlantStageDocument);
   const [updatePlantHistory] = useMutation(UpdatePlantHistoryDocument);
   const [deletePlantHistory] = useMutation(DeletePlantHistoryDocument);
+  const [createPlantHistory] = useMutation(CreatePlantHistoryDocument);
 
   const plant = plantData?.getPlantById;
   const plantHistory = historyData?.getPlantHistory || [];
+  const historyTypes = historyTypesData?.getPlantHistoryTypes || [];
 
   const plantStages = [
     { value: 'germination', label: 'Germination' },
@@ -70,6 +79,31 @@ const PlantDetailsPage: React.FC = () => {
     }
   };
 
+  const handleCreateHistory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!historyFormData.stage || !historyFormData.typeId || !plantId || !environmentId) return;
+
+    try {
+      await createPlantHistory({
+        variables: {
+          plantId,
+          environmentId,
+          input: {
+            stage: historyFormData.stage,
+            typeId: historyFormData.typeId,
+            notes: historyFormData.notes || undefined,
+            data: historyFormData.data || undefined,
+          },
+        },
+      });
+      setHistoryFormData({ stage: '', notes: '', typeId: '', data: '' });
+      setIsAddingHistory(false);
+      refetchHistory();
+    } catch (error) {
+      console.error('Error creating plant history:', error);
+    }
+  };
+
   const handleUpdateHistory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isEditingHistory || !historyFormData.stage || !plantId || !environmentId) return;
@@ -86,7 +120,7 @@ const PlantDetailsPage: React.FC = () => {
           },
         },
       });
-      setHistoryFormData({ stage: '', notes: '' });
+      setHistoryFormData({ stage: '', notes: '', typeId: '', data: '' });
       setIsEditingHistory(null);
       refetchHistory();
     } catch (error) {
@@ -116,12 +150,29 @@ const PlantDetailsPage: React.FC = () => {
     setHistoryFormData({
       stage: entry.stage,
       notes: entry.notes || '',
+      typeId: '',
+      data: '',
     });
   };
 
   const cancelEditingHistory = () => {
     setIsEditingHistory(null);
-    setHistoryFormData({ stage: '', notes: '' });
+    setHistoryFormData({ stage: '', notes: '', typeId: '', data: '' });
+  };
+
+  const startAddingHistory = () => {
+    setIsAddingHistory(true);
+    setHistoryFormData({
+      stage: plant?.currentStage || 'germination',
+      notes: '',
+      typeId: 'type1', // Default to notes type
+      data: '',
+    });
+  };
+
+  const cancelAddingHistory = () => {
+    setIsAddingHistory(false);
+    setHistoryFormData({ stage: '', notes: '', typeId: '', data: '' });
   };
 
   const handleBack = () => {
@@ -270,16 +321,144 @@ const PlantDetailsPage: React.FC = () => {
 
         {/* Plant History */}
         <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
+          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
             <h3 className="text-lg font-medium text-gray-900">Plant History</h3>
+            <button
+              onClick={startAddingHistory}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            >
+              + Add History Entry
+            </button>
           </div>
           
           <div className="p-6">
+            {/* Add History Form */}
+            {isAddingHistory && (
+              <div className="border border-gray-200 rounded-lg p-4 mb-6 bg-gray-50">
+                <h4 className="text-lg font-medium text-gray-900 mb-4">Add New History Entry</h4>
+                <form onSubmit={handleCreateHistory} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="addStage" className="block text-sm font-medium text-gray-700 mb-2">
+                        Stage *
+                      </label>
+                      <select
+                        id="addStage"
+                        value={historyFormData.stage}
+                        onChange={(e) => setHistoryFormData({ ...historyFormData, stage: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        required
+                      >
+                        {plantStages.map(stage => (
+                          <option key={stage.value} value={stage.value}>{stage.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="addType" className="block text-sm font-medium text-gray-700 mb-2">
+                        History Type *
+                      </label>
+                      <select
+                        id="addType"
+                        value={historyFormData.typeId}
+                        onChange={(e) => setHistoryFormData({ ...historyFormData, typeId: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        required
+                      >
+                        {historyTypes.map((type: any) => (
+                          <option key={type.id} value={type.id}>{type.displayName}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="addNotes" className="block text-sm font-medium text-gray-700 mb-2">
+                      Notes
+                    </label>
+                    <input
+                      type="text"
+                      id="addNotes"
+                      value={historyFormData.notes}
+                      onChange={(e) => setHistoryFormData({ ...historyFormData, notes: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                      placeholder="Optional notes"
+                    />
+                  </div>
+                  {/* Water type specific fields */}
+                  {historyFormData.typeId === 'type2' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="addQuantity" className="block text-sm font-medium text-gray-700 mb-2">
+                          Quantity *
+                        </label>
+                        <input
+                          type="number"
+                          id="addQuantity"
+                          step="0.1"
+                          onChange={(e) => {
+                            const quantity = e.target.value;
+                            const volumeUnit = JSON.parse(historyFormData.data || '{}').volumeUnit || 'L';
+                            setHistoryFormData({ 
+                              ...historyFormData, 
+                              data: JSON.stringify({ quantity: parseFloat(quantity), volumeUnit })
+                            });
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                          placeholder="2.5"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="addVolumeUnit" className="block text-sm font-medium text-gray-700 mb-2">
+                          Volume Unit *
+                        </label>
+                        <select
+                          id="addVolumeUnit"
+                          onChange={(e) => {
+                            const volumeUnit = e.target.value;
+                            const quantity = JSON.parse(historyFormData.data || '{}').quantity || 0;
+                            setHistoryFormData({ 
+                              ...historyFormData, 
+                              data: JSON.stringify({ quantity, volumeUnit })
+                            });
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                          required
+                        >
+                          <option value="">Select unit</option>
+                          <option value="L">Liters (L)</option>
+                          <option value="ml">Milliliters (ml)</option>
+                          <option value="gal">Gallons (gal)</option>
+                          <option value="qt">Quarts (qt)</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex gap-3">
+                    <button
+                      type="submit"
+                      disabled={!historyFormData.stage || !historyFormData.typeId}
+                      className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    >
+                      Add History Entry
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelAddingHistory}
+                      className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
             {historyLoading ? (
               <div className="text-center py-8">Loading history...</div>
             ) : (
               <div className="space-y-4">
-                {plantHistory.map((entry) => (
+                {plantHistory.map((entry: any) => (
                   <div key={entry.id} className="border border-gray-200 rounded-lg p-4">
                     {isEditingHistory === entry.id ? (
                       <form onSubmit={handleUpdateHistory} className="space-y-4">
@@ -343,9 +522,26 @@ const PlantDetailsPage: React.FC = () => {
                             }`}>
                               {plantStages.find(s => s.value === entry.stage)?.label || entry.stage}
                             </span>
+                            {entry.type && (
+                              <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                                {entry.type.displayName}
+                              </span>
+                            )}
                           </div>
                           {entry.notes && (
                             <p className="text-sm text-gray-600 mb-2">{entry.notes}</p>
+                          )}
+                          {entry.data && entry.type?.name === 'water' && (
+                            <div className="text-sm text-gray-600 mb-2">
+                              {(() => {
+                                try {
+                                  const data = JSON.parse(entry.data);
+                                  return `Watered: ${data.quantity} ${data.volumeUnit}`;
+                                } catch {
+                                  return entry.data;
+                                }
+                              })()}
+                            </div>
                           )}
                           <p className="text-xs text-gray-400">
                             {new Date(entry.createdAt).toLocaleDateString()}
