@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
+import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
-import PlantDetails from './PlantDetails';
 import { 
   GetPlantsByEnvironmentDocument, 
   CreatePlantDocument, 
@@ -47,10 +47,10 @@ interface PlantManagerProps {
 }
 
 const PlantManager: React.FC<PlantManagerProps> = ({ environmentId }) => {
+  const navigate = useNavigate();
   const [isCreating, setIsCreating] = useState(false);
   // editingId removed as it's not used in current implementation
   const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
-  const [showPlantDetails, setShowPlantDetails] = useState<string | null>(null);
   // newGeneticsName removed as it's not used in current implementation
   const [formData, setFormData] = useState({
     description: '',
@@ -340,7 +340,7 @@ const PlantManager: React.FC<PlantManagerProps> = ({ environmentId }) => {
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setShowPlantDetails(plant.id)}
+                  onClick={() => navigate(`/plant/${environmentId}/${plant.id}`)}
                   className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                 >
                   View Details
@@ -480,15 +480,6 @@ const PlantManager: React.FC<PlantManagerProps> = ({ environmentId }) => {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Plant Details Modal */}
-      {showPlantDetails && (
-        <PlantDetails
-          plantId={showPlantDetails}
-          environmentId={environmentId}
-          onClose={() => setShowPlantDetails(null)}
-        />
       )}
     </div>
   );

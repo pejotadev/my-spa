@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ServiceProviderDashboard from './pages/ServiceProviderDashboard';
+import PlantDetailsPage from './pages/PlantDetailsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import EnvironmentDetails from './components/EnvironmentDetails';
 
@@ -53,6 +54,14 @@ const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute>
             <EnvironmentDetailsWrapper />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/plant/:environmentId/:plantId" 
+        element={
+          <ProtectedRoute>
+            <PlantDetailsPage />
           </ProtectedRoute>
         } 
       />
