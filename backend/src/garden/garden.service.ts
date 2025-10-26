@@ -8,6 +8,8 @@ import { Genetics } from './entities/genetics.entity';
 import { PlantHistory } from './entities/plant-history.entity';
 import { PlantHistoryType } from './entities/plant-history-type.entity';
 import { Harvest } from './entities/harvest.entity';
+import { HarvestHistory } from './entities/harvest-history.entity';
+import { HarvestHistoryType } from './entities/harvest-history-type.entity';
 import { CreateEnvironmentDto } from './dto/create-environment.dto';
 import { UpdateEnvironmentDto } from './dto/update-environment.dto';
 import { CreateLightDto } from './dto/create-light.dto';
@@ -20,6 +22,10 @@ import { CreatePlantHistoryDto } from './dto/create-plant-history.dto';
 import { UpdatePlantStageDto } from './dto/update-plant-stage.dto';
 import { UpdatePlantHistoryDto } from './dto/update-plant-history.dto';
 import { CreateHarvestDto } from './dto/create-harvest.dto';
+import { CreateHarvestHistoryDto } from './dto/create-harvest-history.dto';
+import { UpdateHarvestHistoryDto } from './dto/update-harvest-history.dto';
+import { CreateHarvestHistoryTypeDto } from './dto/harvest-history-type.dto';
+import { UpdateHarvestHistoryTypeDto } from './dto/harvest-history-type.dto';
 import { CreatePlantHistoryTypeDto } from './dto/plant-history-type.dto';
 import { UpdatePlantHistoryTypeDto } from './dto/plant-history-type.dto';
 
@@ -368,13 +374,29 @@ export class GardenService {
       harvestDate: harvest.harvestDate
     });
 
-    // Criar entrada no histórico automaticamente
+    // Criar entrada no histórico da planta automaticamente
     await EnvironmentRepository.createPlantHistory({
       plantId: data.plantId,
       stage: 'flowering', // Manter o stage atual
       typeId: 'type1', // Default to 'notes' type
       notes: `Plant harvested${data.weight ? ` - Weight: ${data.weight}g` : ''}${data.notes ? ` - Notes: ${data.notes}` : ''}`,
     });
+
+    // Criar entrada no histórico de harvest automaticamente
+    if (data.weight) {
+      await this.prisma.harvestHistory.create({
+        data: {
+          harvestId: harvest.id,
+          stage: 'drying', // Stage inicial
+          typeId: 'harvest_type2', // Weight on harvest type
+          notes: data.notes || 'Initial harvest weight',
+          data: JSON.stringify({
+            weight: data.weight,
+            notes: data.notes || 'Initial harvest weight'
+          }),
+        },
+      });
+    }
 
     return harvest;
   }
@@ -477,5 +499,111 @@ export class GardenService {
     return this.prisma.plantHistoryType.delete({
       where: { id },
     });
+  }
+
+  // Harvest History Type methods
+  async getHarvestHistoryTypes(): Promise<HarvestHistoryType[]> {
+    return this.prisma.harvestHistoryType.findMany({
+      where: { isActive: true },
+      orderBy: { displayName: 'asc' },
+    });
+  }
+
+  async getHarvestHistoryTypeById(id: string): Promise<HarvestHistoryType | null> {
+    return this.prisma.harvestHistoryType.findUnique({
+      where: { id },
+    });
+  }
+
+  async createHarvestHistoryType(data: CreateHarvestHistoryTypeDto): Promise<HarvestHistoryType> {
+    return this.prisma.harvestHistoryType.create({
+      data: {
+        ...data,
+        isActive: data.isActive ?? true,
+      },
+    });
+  }
+
+  async updateHarvestHistoryType(id: string, data: UpdateHarvestHistoryTypeDto): Promise<HarvestHistoryType> {
+    return this.prisma.harvestHistoryType.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async deleteHarvestHistoryType(id: string): Promise<boolean> {
+    await this.prisma.harvestHistoryType.delete({
+      where: { id },
+    });
+    return true;
+  }
+
+  // Harvest History methods
+  async getHarvestHistory(harvestId: string): Promise<HarvestHistory[]> {
+    return this.prisma.harvestHistory.findMany({
+      where: { harvestId },
+      include: {
+        type: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getHarvestByPlant(plantId: string): Promise<Harvest | null> {
+    return this.prisma.harvest.findFirst({
+      where: { plantId },
+      include: {
+        history: {
+          include: {
+            type: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+  }
+
+  async createHarvestHistory(data: CreateHarvestHistoryDto): Promise<HarvestHistory> {
+    return this.prisma.harvestHistory.create({
+      data,
+      include: {
+        type: true,
+      },
+    });
+  }
+
+  async updateHarvestHistory(historyId: string, harvestId: string, data: UpdateHarvestHistoryDto): Promise<HarvestHistory> {
+    // Verificar se o histórico pertence ao harvest
+    const existingHistory = await this.prisma.harvestHistory.findFirst({
+      where: { id: historyId, harvestId },
+    });
+
+    if (!existingHistory) {
+      throw new NotFoundException('Harvest history not found');
+    }
+
+    return this.prisma.harvestHistory.update({
+      where: { id: historyId },
+      data,
+      include: {
+        type: true,
+      },
+    });
+  }
+
+  async deleteHarvestHistory(historyId: string, harvestId: string): Promise<boolean> {
+    // Verificar se o histórico pertence ao harvest
+    const existingHistory = await this.prisma.harvestHistory.findFirst({
+      where: { id: historyId, harvestId },
+    });
+
+    if (!existingHistory) {
+      throw new NotFoundException('Harvest history not found');
+    }
+
+    await this.prisma.harvestHistory.delete({
+      where: { id: historyId },
+    });
+    return true;
   }
 }

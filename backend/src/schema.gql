@@ -45,6 +45,22 @@ input CreateHarvestDto {
   weight: Float
 }
 
+input CreateHarvestHistoryDto {
+  data: String
+  harvestId: ID!
+  notes: String
+  stage: String!
+  typeId: ID!
+}
+
+input CreateHarvestHistoryTypeDto {
+  description: String
+  displayName: String!
+  fields: String!
+  isActive: Boolean
+  name: String!
+}
+
 input CreateLightDto {
   type: String!
   watts: Float
@@ -107,12 +123,38 @@ type Genetics {
 type Harvest {
   createdAt: DateTime!
   harvestDate: DateTime!
+  history: [HarvestHistory!]
   id: ID!
   notes: String
   plant: Plant
   plantId: ID!
+  stage: String!
   updatedAt: DateTime!
   weight: Float
+}
+
+type HarvestHistory {
+  createdAt: DateTime!
+  data: String
+  harvest: Harvest
+  harvestId: ID!
+  id: ID!
+  notes: String
+  stage: String!
+  type: HarvestHistoryType
+  typeId: ID!
+}
+
+type HarvestHistoryType {
+  createdAt: DateTime!
+  description: String
+  displayName: String!
+  fields: String!
+  histories: [HarvestHistory!]
+  id: ID!
+  isActive: Boolean!
+  name: String!
+  updatedAt: DateTime!
 }
 
 type Light {
@@ -139,6 +181,8 @@ type Mutation {
   createEnvironment(input: CreateEnvironmentDto!): Environment!
   createGenetics(input: CreateGeneticsDto!): Genetics!
   createHarvest(input: CreateHarvestDto!): Harvest!
+  createHarvestHistory(input: CreateHarvestHistoryDto!): HarvestHistory!
+  createHarvestHistoryType(input: CreateHarvestHistoryTypeDto!): HarvestHistoryType!
   createLight(environmentId: ID!, input: CreateLightDto!): Light!
   createPlant(environmentId: ID!, input: CreatePlantDto!): Plant!
   createPlantHistory(environmentId: ID!, input: CreatePlantHistoryDto!, plantId: ID!): PlantHistory!
@@ -148,6 +192,8 @@ type Mutation {
   deleteConfiguration(configurationId: String!): Boolean!
   deleteEnvironment(id: ID!): Environment!
   deleteGenetics(id: ID!): Genetics!
+  deleteHarvestHistory(harvestId: ID!, historyId: ID!): Boolean!
+  deleteHarvestHistoryType(id: ID!): Boolean!
   deleteLight(environmentId: ID!, lightId: ID!): Light!
   deletePlant(environmentId: ID!, plantId: ID!): Plant!
   deletePlantHistory(environmentId: ID!, historyId: ID!, plantId: ID!): Boolean!
@@ -159,6 +205,8 @@ type Mutation {
   updateConfiguration(configurationData: String!, configurationId: String!): String!
   updateEnvironment(id: ID!, input: UpdateEnvironmentDto!): Environment!
   updateGenetics(id: ID!, input: UpdateGeneticsDto!): Genetics!
+  updateHarvestHistory(harvestId: ID!, historyId: ID!, input: UpdateHarvestHistoryDto!): HarvestHistory!
+  updateHarvestHistoryType(id: ID!, input: UpdateHarvestHistoryTypeDto!): HarvestHistoryType!
   updateLight(environmentId: ID!, input: UpdateLightDto!, lightId: ID!): Light!
   updatePlant(environmentId: ID!, input: UpdatePlantDto!, plantId: ID!): Plant!
   updatePlantHistory(environmentId: ID!, historyId: ID!, input: UpdatePlantHistoryDto!, plantId: ID!): PlantHistory!
@@ -213,6 +261,10 @@ type Query {
   getConfiguration(configurationId: String!): String!
   getEnvironment(id: ID!): Environment!
   getGeneticsById(id: ID!): Genetics!
+  getHarvestByPlant(plantId: ID!): Harvest
+  getHarvestHistory(harvestId: ID!): [HarvestHistory!]!
+  getHarvestHistoryTypeById(id: ID!): HarvestHistoryType
+  getHarvestHistoryTypes: [HarvestHistoryType!]!
   getLightsByEnvironment(environmentId: ID!): [Light!]!
   getMyBookings(configurationId: String!, limit: Float! = 20, pageToken: String): String!
   getMyConfigurations: String!
@@ -253,6 +305,21 @@ input UpdateEnvironmentDto {
 
 input UpdateGeneticsDto {
   description: String
+  name: String
+}
+
+input UpdateHarvestHistoryDto {
+  data: String
+  notes: String
+  stage: String
+  typeId: ID
+}
+
+input UpdateHarvestHistoryTypeDto {
+  description: String
+  displayName: String
+  fields: String
+  isActive: Boolean
   name: String
 }
 

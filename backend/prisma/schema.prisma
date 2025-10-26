@@ -191,11 +191,43 @@ model Harvest {
   plantId     String   // Reference to the harvested plant
   weight      Float?   // Weight after complete harvest (in grams)
   notes       String?  // Additional harvest notes
+  stage       String   @default("drying") // Current stage: drying, trimming, curing, storage
   harvestDate DateTime @default(now())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  plant Plant @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  plant   Plant           @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  history HarvestHistory[]
 
   @@map("harvests")
+}
+
+model HarvestHistory {
+  id        String   @id @default(cuid())
+  harvestId String   // Reference to the harvest
+  stage     String   // drying, trimming, curing, storage
+  typeId    String   // Reference to HarvestHistoryType
+  notes     String?  // General notes
+  data      String?  // Additional data specific to the history type (stored as JSON text)
+  createdAt DateTime @default(now())
+
+  harvest Harvest           @relation(fields: [harvestId], references: [id], onDelete: Cascade)
+  type    HarvestHistoryType @relation(fields: [typeId], references: [id], onDelete: Cascade)
+
+  @@map("harvest_history")
+}
+
+model HarvestHistoryType {
+  id          String   @id @default(cuid())
+  name        String   @unique // weight_on_harvest, notes, etc.
+  displayName String   // Weight on Harvest, Notes, etc.
+  description String?  // Description of this history type
+  fields      String   // JSON schema for additional fields (stored as text)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  histories HarvestHistory[]
+
+  @@map("harvest_history_types")
 }

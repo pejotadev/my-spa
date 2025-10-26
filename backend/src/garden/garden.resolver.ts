@@ -8,6 +8,8 @@ import { Genetics } from './entities/genetics.entity';
 import { PlantHistory } from './entities/plant-history.entity';
 import { PlantHistoryType } from './entities/plant-history-type.entity';
 import { Harvest } from './entities/harvest.entity';
+import { HarvestHistory } from './entities/harvest-history.entity';
+import { HarvestHistoryType } from './entities/harvest-history-type.entity';
 import { CreateEnvironmentDto } from './dto/create-environment.dto';
 import { UpdateEnvironmentDto } from './dto/update-environment.dto';
 import { CreateLightDto } from './dto/create-light.dto';
@@ -21,6 +23,10 @@ import { UpdatePlantStageDto } from './dto/update-plant-stage.dto';
 import { UpdatePlantHistoryDto } from './dto/update-plant-history.dto';
 import { HarvestPlantDto } from './dto/harvest-plant.dto';
 import { CreateHarvestDto } from './dto/create-harvest.dto';
+import { CreateHarvestHistoryDto } from './dto/create-harvest-history.dto';
+import { UpdateHarvestHistoryDto } from './dto/update-harvest-history.dto';
+import { CreateHarvestHistoryTypeDto } from './dto/harvest-history-type.dto';
+import { UpdateHarvestHistoryTypeDto } from './dto/harvest-history-type.dto';
 import { CreatePlantHistoryTypeDto } from './dto/plant-history-type.dto';
 import { UpdatePlantHistoryTypeDto } from './dto/plant-history-type.dto';
 import { CurrentUser } from '../auth/current-user.decorator';
@@ -250,6 +256,70 @@ export class GardenResolver {
   }
 
   // Plant History Type queries and mutations
+  @Query(() => [HarvestHistoryType])
+  async getHarvestHistoryTypes(): Promise<HarvestHistoryType[]> {
+    return this.gardenService.getHarvestHistoryTypes();
+  }
+
+  @Query(() => HarvestHistoryType, { nullable: true })
+  async getHarvestHistoryTypeById(@Args('id', { type: () => ID }) id: string): Promise<HarvestHistoryType | null> {
+    return this.gardenService.getHarvestHistoryTypeById(id);
+  }
+
+  @Mutation(() => HarvestHistoryType)
+  async createHarvestHistoryType(
+    @Args('input') input: CreateHarvestHistoryTypeDto
+  ): Promise<HarvestHistoryType> {
+    return this.gardenService.createHarvestHistoryType(input);
+  }
+
+  @Mutation(() => HarvestHistoryType)
+  async updateHarvestHistoryType(
+    @Args('id', { type: () => ID }) id: string,
+    @Args('input') input: UpdateHarvestHistoryTypeDto
+  ): Promise<HarvestHistoryType> {
+    return this.gardenService.updateHarvestHistoryType(id, input);
+  }
+
+  @Mutation(() => Boolean)
+  async deleteHarvestHistoryType(@Args('id', { type: () => ID }) id: string): Promise<boolean> {
+    return this.gardenService.deleteHarvestHistoryType(id);
+  }
+
+  @Query(() => [HarvestHistory])
+  async getHarvestHistory(@Args('harvestId', { type: () => ID }) harvestId: string): Promise<HarvestHistory[]> {
+    return this.gardenService.getHarvestHistory(harvestId);
+  }
+
+  @Query(() => Harvest, { nullable: true })
+  async getHarvestByPlant(@Args('plantId', { type: () => ID }) plantId: string): Promise<Harvest | null> {
+    return this.gardenService.getHarvestByPlant(plantId);
+  }
+
+  @Mutation(() => HarvestHistory)
+  async createHarvestHistory(
+    @Args('input') input: CreateHarvestHistoryDto
+  ): Promise<HarvestHistory> {
+    return this.gardenService.createHarvestHistory(input);
+  }
+
+  @Mutation(() => HarvestHistory)
+  async updateHarvestHistory(
+    @Args('historyId', { type: () => ID }) historyId: string,
+    @Args('harvestId', { type: () => ID }) harvestId: string,
+    @Args('input') input: UpdateHarvestHistoryDto
+  ): Promise<HarvestHistory> {
+    return this.gardenService.updateHarvestHistory(historyId, harvestId, input);
+  }
+
+  @Mutation(() => Boolean)
+  async deleteHarvestHistory(
+    @Args('historyId', { type: () => ID }) historyId: string,
+    @Args('harvestId', { type: () => ID }) harvestId: string
+  ): Promise<boolean> {
+    return this.gardenService.deleteHarvestHistory(historyId, harvestId);
+  }
+
   @Query(() => [PlantHistoryType])
   async getPlantHistoryTypes(): Promise<PlantHistoryType[]> {
     return this.gardenService.getPlantHistoryTypes();

@@ -1,26 +1,25 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { Plant } from './plant.entity';
 import { HarvestHistory } from './harvest-history.entity';
 
 @ObjectType()
-export class Harvest {
+export class HarvestHistoryType {
   @Field(() => ID)
   id: string;
 
-  @Field(() => ID)
-  plantId: string;
-
-  @Field({ nullable: true })
-  weight?: number;
-
-  @Field({ nullable: true })
-  notes?: string;
+  @Field()
+  name: string;
 
   @Field()
-  stage: string;
+  displayName: string;
+
+  @Field({ nullable: true })
+  description?: string;
 
   @Field()
-  harvestDate: Date;
+  fields: string;
+
+  @Field()
+  isActive: boolean;
 
   @Field()
   createdAt: Date;
@@ -28,9 +27,6 @@ export class Harvest {
   @Field()
   updatedAt: Date;
 
-  @Field(() => Plant, { nullable: true })
-  plant?: Plant;
-
   @Field(() => [HarvestHistory], { nullable: true })
-  history?: HarvestHistory[];
+  histories?: HarvestHistory[];
 }
