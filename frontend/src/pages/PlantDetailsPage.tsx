@@ -434,6 +434,34 @@ const PlantDetailsPage: React.FC = () => {
                       </div>
                     </div>
                   )}
+                  {/* Pruning type specific fields */}
+                  {historyFormData.typeId === 'type3' && (
+                    <div>
+                      <label htmlFor="addPruningType" className="block text-sm font-medium text-gray-700 mb-2">
+                        Pruning Type *
+                      </label>
+                      <select
+                        id="addPruningType"
+                        onChange={(e) => {
+                          const pruningType = e.target.value;
+                          setHistoryFormData({ 
+                            ...historyFormData, 
+                            data: JSON.stringify({ pruningType })
+                          });
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        required
+                      >
+                        <option value="">Select pruning type</option>
+                        <option value="Topping">Topping</option>
+                        <option value="FIM">FIM</option>
+                        <option value="LST">LST</option>
+                        <option value="Defoliation">Defoliation</option>
+                        <option value="Lollipopping">Lollipopping</option>
+                        <option value="Super Cropping">Super Cropping</option>
+                      </select>
+                    </div>
+                  )}
                   <div className="flex gap-3">
                     <button
                       type="submit"
@@ -537,6 +565,18 @@ const PlantDetailsPage: React.FC = () => {
                                 try {
                                   const data = JSON.parse(entry.data);
                                   return `Watered: ${data.quantity} ${data.volumeUnit}`;
+                                } catch {
+                                  return entry.data;
+                                }
+                              })()}
+                            </div>
+                          )}
+                          {entry.data && entry.type?.name === 'pruning' && (
+                            <div className="text-sm text-gray-600 mb-2">
+                              {(() => {
+                                try {
+                                  const data = JSON.parse(entry.data);
+                                  return `Pruning: ${data.pruningType}`;
                                 } catch {
                                   return entry.data;
                                 }
