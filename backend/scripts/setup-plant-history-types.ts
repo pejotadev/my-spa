@@ -86,6 +86,82 @@ async function setupPlantHistoryTypes() {
 
     console.log(`✅ Pruning type created/updated: ${pruningType.id}`);
 
+    // Criar tipo "Nutrients"
+    const nutrientsType = await prisma.plantHistoryType.upsert({
+      where: { id: 'type4' },
+      update: {
+        fields: JSON.stringify([
+          {
+            name: 'applicationMethod',
+            label: 'Application Method',
+            type: 'select',
+            options: ['Liquid', 'Spray', 'Solid'],
+            required: true
+          },
+          {
+            name: 'nutrientMixes',
+            label: 'Nutrient Mixes',
+            type: 'array',
+            required: true,
+            itemSchema: {
+              type: 'object',
+              properties: {
+                nutrientName: { type: 'string', required: true },
+                amount: { type: 'object', required: true },
+                solvent: { 
+                  type: 'object', 
+                  required: true,
+                  properties: {
+                    quantity: { type: 'number', required: true },
+                    volumeUnit: { type: 'string', required: true }
+                  }
+                }
+              }
+            }
+          }
+        ]),
+      },
+      create: {
+        id: 'type4',
+        name: 'nutrients',
+        displayName: 'Nutrients',
+        description: 'Nutrient application with different methods and mixes',
+        fields: JSON.stringify([
+          {
+            name: 'applicationMethod',
+            label: 'Application Method',
+            type: 'select',
+            options: ['Liquid', 'Spray', 'Solid'],
+            required: true
+          },
+          {
+            name: 'nutrientMixes',
+            label: 'Nutrient Mixes',
+            type: 'array',
+            required: true,
+            itemSchema: {
+              type: 'object',
+              properties: {
+                nutrientName: { type: 'string', required: true },
+                amount: { type: 'object', required: true },
+                solvent: { 
+                  type: 'object', 
+                  required: true,
+                  properties: {
+                    quantity: { type: 'number', required: true },
+                    volumeUnit: { type: 'string', required: true }
+                  }
+                }
+              }
+            }
+          }
+        ]),
+        isActive: true,
+      },
+    });
+
+    console.log(`✅ Nutrients type created/updated: ${nutrientsType.id}`);
+
     // Listar todos os tipos criados
     const allTypes = await prisma.plantHistoryType.findMany();
     console.log('\n📋 All Plant History Types:');
