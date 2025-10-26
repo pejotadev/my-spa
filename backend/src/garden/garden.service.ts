@@ -320,6 +320,47 @@ export class GardenService {
     return updatedPlant;
   }
 
+  async harvestPlant(plantId: string, environmentId: string, userId: string): Promise<Plant> {
+    // Verificar se o environment pertence ao usuário
+    const environment = await EnvironmentRepository.getEnvironmentByIdAndUser(environmentId, userId);
+    if (!environment) {
+      throw new NotFoundException('Environment not found');
+    }
+
+    // Verificar se a planta pertence ao environment
+    const plant = await EnvironmentRepository.getPlantByIdAndEnvironment(plantId, environmentId);
+    if (!plant) {
+      throw new NotFoundException('Plant not found');
+    }
+
+    // Verificar se a planta está no stage flowering
+    if (plant.currentStage !== 'flowering') {
+      throw new ForbiddenException('Plant must be in flowering stage to harvest');
+    }
+
+    // Verificar se a planta já foi colhida
+    if (plant.harvest) {
+      throw new ForbiddenException('Plant has already been harvested');
+    }
+
+    // Marcar a planta como colhida
+    const harvestDate = new Date();
+    const updatedPlant = await EnvironmentRepository.updatePlant(plantId, { 
+      harvest: true,
+      harvestDate: harvestDate
+    });
+
+    // Criar entrada no histórico automaticamente
+    await EnvironmentRepository.createPlantHistory({
+      plantId,
+      stage: 'flowering', // Manter o stage atual
+      typeId: 'type1', // Default to 'notes' type
+      notes: `Plant harvested on ${harvestDate.toLocaleDateString()}`,
+    });
+
+    return updatedPlant;
+  }
+
   async updatePlantHistory(historyId: string, plantId: string, environmentId: string, data: UpdatePlantHistoryDto, userId: string): Promise<PlantHistory> {
     // Verificar se o environment pertence ao usuário
     const environment = await EnvironmentRepository.getEnvironmentByIdAndUser(environmentId, userId);

@@ -143,6 +143,8 @@ model Plant {
   geneticsId    String   // Referência à genética (nome da planta)
   environmentId String   // Ambiente onde está a planta
   currentStage  String?  // Current stage: germination, clone_seedling, vegetative, flowering
+  harvest       Boolean  @default(false) // Whether the plant has been harvested
+  harvestDate   DateTime? // Date when the plant was harvested
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

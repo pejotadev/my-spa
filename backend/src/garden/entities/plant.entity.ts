@@ -22,6 +22,12 @@ export class Plant {
   currentStage?: string;
 
   @Field()
+  harvest: boolean;
+
+  @Field({ nullable: true })
+  harvestDate?: Date;
+
+  @Field()
   createdAt: Date;
 
   @Field()

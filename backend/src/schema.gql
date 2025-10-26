@@ -97,6 +97,11 @@ type Genetics {
   updatedAt: DateTime!
 }
 
+input HarvestPlantDto {
+  environmentId: String!
+  plantId: String!
+}
+
 type Light {
   createdAt: DateTime!
   environmentId: ID!
@@ -133,6 +138,7 @@ type Mutation {
   deletePlant(environmentId: ID!, plantId: ID!): Plant!
   deletePlantHistory(environmentId: ID!, historyId: ID!, plantId: ID!): Boolean!
   deletePlantHistoryType(id: ID!): PlantHistoryType!
+  harvestPlant(input: HarvestPlantDto!): Plant!
   login(loginDto: LoginDto!): AuthPayload!
   removeCategoryFromMe(categoryId: String!): ServiceProviderCategory!
   removeUser(id: String!): User!
@@ -156,6 +162,8 @@ type Plant {
   environmentId: ID!
   genetics: Genetics
   geneticsId: ID!
+  harvest: Boolean!
+  harvestDate: DateTime
   id: ID!
   updatedAt: DateTime!
 }

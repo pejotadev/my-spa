@@ -18,6 +18,7 @@ import { UpdateGeneticsDto } from './dto/update-genetics.dto';
 import { CreatePlantHistoryDto } from './dto/create-plant-history.dto';
 import { UpdatePlantStageDto } from './dto/update-plant-stage.dto';
 import { UpdatePlantHistoryDto } from './dto/update-plant-history.dto';
+import { HarvestPlantDto } from './dto/harvest-plant.dto';
 import { CreatePlantHistoryTypeDto } from './dto/plant-history-type.dto';
 import { UpdatePlantHistoryTypeDto } from './dto/plant-history-type.dto';
 import { CurrentUser } from '../auth/current-user.decorator';
@@ -215,6 +216,14 @@ export class GardenResolver {
     @CurrentUser() user: any
   ): Promise<Plant> {
     return this.gardenService.updatePlantStage(plantId, environmentId, input, user.userId);
+  }
+
+  @Mutation(() => Plant)
+  async harvestPlant(
+    @Args('input') input: HarvestPlantDto,
+    @CurrentUser() user: any
+  ): Promise<Plant> {
+    return this.gardenService.harvestPlant(input.plantId, input.environmentId, user.userId);
   }
 
   @Mutation(() => PlantHistory)
