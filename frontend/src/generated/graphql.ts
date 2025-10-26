@@ -64,6 +64,22 @@ export type CreateHarvestDto = {
   weight?: InputMaybe<Scalars['Float']['input']>;
 };
 
+export type CreateHarvestHistoryDto = {
+  data?: InputMaybe<Scalars['String']['input']>;
+  harvestId: Scalars['ID']['input'];
+  notes?: InputMaybe<Scalars['String']['input']>;
+  stage: Scalars['String']['input'];
+  typeId: Scalars['ID']['input'];
+};
+
+export type CreateHarvestHistoryTypeDto = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  displayName: Scalars['String']['input'];
+  fields: Scalars['String']['input'];
+  isActive?: InputMaybe<Scalars['Boolean']['input']>;
+  name: Scalars['String']['input'];
+};
+
 export type CreateLightDto = {
   type: Scalars['String']['input'];
   watts?: InputMaybe<Scalars['Float']['input']>;
@@ -124,12 +140,40 @@ export type Harvest = {
   __typename?: 'Harvest';
   createdAt: Scalars['DateTime']['output'];
   harvestDate: Scalars['DateTime']['output'];
+  history?: Maybe<Array<HarvestHistory>>;
   id: Scalars['ID']['output'];
   notes?: Maybe<Scalars['String']['output']>;
   plant?: Maybe<Plant>;
   plantId: Scalars['ID']['output'];
+  stage: Scalars['String']['output'];
   updatedAt: Scalars['DateTime']['output'];
   weight?: Maybe<Scalars['Float']['output']>;
+};
+
+export type HarvestHistory = {
+  __typename?: 'HarvestHistory';
+  createdAt: Scalars['DateTime']['output'];
+  data?: Maybe<Scalars['String']['output']>;
+  harvest?: Maybe<Harvest>;
+  harvestId: Scalars['ID']['output'];
+  id: Scalars['ID']['output'];
+  notes?: Maybe<Scalars['String']['output']>;
+  stage: Scalars['String']['output'];
+  type?: Maybe<HarvestHistoryType>;
+  typeId: Scalars['ID']['output'];
+};
+
+export type HarvestHistoryType = {
+  __typename?: 'HarvestHistoryType';
+  createdAt: Scalars['DateTime']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  displayName: Scalars['String']['output'];
+  fields: Scalars['String']['output'];
+  histories?: Maybe<Array<HarvestHistory>>;
+  id: Scalars['ID']['output'];
+  isActive: Scalars['Boolean']['output'];
+  name: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
 };
 
 export type Light = {
@@ -158,6 +202,8 @@ export type Mutation = {
   createEnvironment: Environment;
   createGenetics: Genetics;
   createHarvest: Harvest;
+  createHarvestHistory: HarvestHistory;
+  createHarvestHistoryType: HarvestHistoryType;
   createLight: Light;
   createPlant: Plant;
   createPlantHistory: PlantHistory;
@@ -167,6 +213,8 @@ export type Mutation = {
   deleteConfiguration: Scalars['Boolean']['output'];
   deleteEnvironment: Environment;
   deleteGenetics: Genetics;
+  deleteHarvestHistory: Scalars['Boolean']['output'];
+  deleteHarvestHistoryType: Scalars['Boolean']['output'];
   deleteLight: Light;
   deletePlant: Plant;
   deletePlantHistory: Scalars['Boolean']['output'];
@@ -178,6 +226,8 @@ export type Mutation = {
   updateConfiguration: Scalars['String']['output'];
   updateEnvironment: Environment;
   updateGenetics: Genetics;
+  updateHarvestHistory: HarvestHistory;
+  updateHarvestHistoryType: HarvestHistoryType;
   updateLight: Light;
   updatePlant: Plant;
   updatePlantHistory: PlantHistory;
@@ -239,6 +289,16 @@ export type MutationCreateHarvestArgs = {
 };
 
 
+export type MutationCreateHarvestHistoryArgs = {
+  input: CreateHarvestHistoryDto;
+};
+
+
+export type MutationCreateHarvestHistoryTypeArgs = {
+  input: CreateHarvestHistoryTypeDto;
+};
+
+
 export type MutationCreateLightArgs = {
   environmentId: Scalars['ID']['input'];
   input: CreateLightDto;
@@ -285,6 +345,17 @@ export type MutationDeleteEnvironmentArgs = {
 
 
 export type MutationDeleteGeneticsArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDeleteHarvestHistoryArgs = {
+  harvestId: Scalars['ID']['input'];
+  historyId: Scalars['ID']['input'];
+};
+
+
+export type MutationDeleteHarvestHistoryTypeArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -350,6 +421,19 @@ export type MutationUpdateEnvironmentArgs = {
 export type MutationUpdateGeneticsArgs = {
   id: Scalars['ID']['input'];
   input: UpdateGeneticsDto;
+};
+
+
+export type MutationUpdateHarvestHistoryArgs = {
+  harvestId: Scalars['ID']['input'];
+  historyId: Scalars['ID']['input'];
+  input: UpdateHarvestHistoryDto;
+};
+
+
+export type MutationUpdateHarvestHistoryTypeArgs = {
+  id: Scalars['ID']['input'];
+  input: UpdateHarvestHistoryTypeDto;
 };
 
 
@@ -443,6 +527,10 @@ export type Query = {
   getConfiguration: Scalars['String']['output'];
   getEnvironment: Environment;
   getGeneticsById: Genetics;
+  getHarvestByPlant?: Maybe<Harvest>;
+  getHarvestHistory: Array<HarvestHistory>;
+  getHarvestHistoryTypeById?: Maybe<HarvestHistoryType>;
+  getHarvestHistoryTypes: Array<HarvestHistoryType>;
   getLightsByEnvironment: Array<Light>;
   getMyBookings: Scalars['String']['output'];
   getMyConfigurations: Scalars['String']['output'];
@@ -495,6 +583,21 @@ export type QueryGetEnvironmentArgs = {
 
 
 export type QueryGetGeneticsByIdArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryGetHarvestByPlantArgs = {
+  plantId: Scalars['ID']['input'];
+};
+
+
+export type QueryGetHarvestHistoryArgs = {
+  harvestId: Scalars['ID']['input'];
+};
+
+
+export type QueryGetHarvestHistoryTypeByIdArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -572,6 +675,21 @@ export type UpdateEnvironmentDto = {
 
 export type UpdateGeneticsDto = {
   description?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UpdateHarvestHistoryDto = {
+  data?: InputMaybe<Scalars['String']['input']>;
+  notes?: InputMaybe<Scalars['String']['input']>;
+  stage?: InputMaybe<Scalars['String']['input']>;
+  typeId?: InputMaybe<Scalars['ID']['input']>;
+};
+
+export type UpdateHarvestHistoryTypeDto = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  displayName?: InputMaybe<Scalars['String']['input']>;
+  fields?: InputMaybe<Scalars['String']['input']>;
+  isActive?: InputMaybe<Scalars['Boolean']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -967,7 +1085,50 @@ export type CreateHarvestMutationVariables = Exact<{
 }>;
 
 
-export type CreateHarvestMutation = { __typename?: 'Mutation', createHarvest: { __typename?: 'Harvest', id: string, plantId: string, weight?: number | null, notes?: string | null, harvestDate: any, createdAt: any, updatedAt: any, plant?: { __typename?: 'Plant', id: string, code: string, currentStage?: string | null, harvest: boolean, harvestDate?: any | null, genetics?: { __typename?: 'Genetics', id: string, name: string } | null } | null } };
+export type CreateHarvestMutation = { __typename?: 'Mutation', createHarvest: { __typename?: 'Harvest', id: string, plantId: string, weight?: number | null, notes?: string | null, stage: string, harvestDate: any, createdAt: any, updatedAt: any, plant?: { __typename?: 'Plant', id: string, code: string, currentStage?: string | null, harvest: boolean, harvestDate?: any | null, genetics?: { __typename?: 'Genetics', id: string, name: string } | null } | null, history?: Array<{ __typename?: 'HarvestHistory', id: string, stage: string, typeId: string, notes?: string | null, data?: string | null, createdAt: any, type?: { __typename?: 'HarvestHistoryType', id: string, name: string, displayName: string } | null }> | null } };
+
+export type GetHarvestHistoryTypesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetHarvestHistoryTypesQuery = { __typename?: 'Query', getHarvestHistoryTypes: Array<{ __typename?: 'HarvestHistoryType', id: string, name: string, displayName: string, description?: string | null, fields: string, isActive: boolean }> };
+
+export type GetHarvestHistoryQueryVariables = Exact<{
+  harvestId: Scalars['ID']['input'];
+}>;
+
+
+export type GetHarvestHistoryQuery = { __typename?: 'Query', getHarvestHistory: Array<{ __typename?: 'HarvestHistory', id: string, harvestId: string, stage: string, typeId: string, notes?: string | null, data?: string | null, createdAt: any, type?: { __typename?: 'HarvestHistoryType', id: string, name: string, displayName: string, fields: string } | null }> };
+
+export type CreateHarvestHistoryMutationVariables = Exact<{
+  input: CreateHarvestHistoryDto;
+}>;
+
+
+export type CreateHarvestHistoryMutation = { __typename?: 'Mutation', createHarvestHistory: { __typename?: 'HarvestHistory', id: string, harvestId: string, stage: string, typeId: string, notes?: string | null, data?: string | null, createdAt: any, type?: { __typename?: 'HarvestHistoryType', id: string, name: string, displayName: string, fields: string } | null } };
+
+export type UpdateHarvestHistoryMutationVariables = Exact<{
+  historyId: Scalars['ID']['input'];
+  harvestId: Scalars['ID']['input'];
+  input: UpdateHarvestHistoryDto;
+}>;
+
+
+export type UpdateHarvestHistoryMutation = { __typename?: 'Mutation', updateHarvestHistory: { __typename?: 'HarvestHistory', id: string, harvestId: string, stage: string, typeId: string, notes?: string | null, data?: string | null, createdAt: any, type?: { __typename?: 'HarvestHistoryType', id: string, name: string, displayName: string, fields: string } | null } };
+
+export type DeleteHarvestHistoryMutationVariables = Exact<{
+  historyId: Scalars['ID']['input'];
+  harvestId: Scalars['ID']['input'];
+}>;
+
+
+export type DeleteHarvestHistoryMutation = { __typename?: 'Mutation', deleteHarvestHistory: boolean };
+
+export type GetHarvestByPlantQueryVariables = Exact<{
+  plantId: Scalars['ID']['input'];
+}>;
+
+
+export type GetHarvestByPlantQuery = { __typename?: 'Query', getHarvestByPlant?: { __typename?: 'Harvest', id: string, plantId: string, weight?: number | null, notes?: string | null, stage: string, harvestDate: any, createdAt: any, updatedAt: any, history?: Array<{ __typename?: 'HarvestHistory', id: string, stage: string, typeId: string, notes?: string | null, data?: string | null, createdAt: any, type?: { __typename?: 'HarvestHistoryType', id: string, name: string, displayName: string } | null }> | null } | null };
 
 
 export const GetCategoriesDocument = gql`
@@ -2934,6 +3095,7 @@ export const CreateHarvestDocument = gql`
     plantId
     weight
     notes
+    stage
     harvestDate
     createdAt
     updatedAt
@@ -2946,6 +3108,19 @@ export const CreateHarvestDocument = gql`
       genetics {
         id
         name
+      }
+    }
+    history {
+      id
+      stage
+      typeId
+      notes
+      data
+      createdAt
+      type {
+        id
+        name
+        displayName
       }
     }
   }
@@ -2977,3 +3152,296 @@ export function useCreateHarvestMutation(baseOptions?: ApolloReactHooks.Mutation
 export type CreateHarvestMutationHookResult = ReturnType<typeof useCreateHarvestMutation>;
 export type CreateHarvestMutationResult = Apollo.MutationResult<CreateHarvestMutation>;
 export type CreateHarvestMutationOptions = Apollo.BaseMutationOptions<CreateHarvestMutation, CreateHarvestMutationVariables>;
+export const GetHarvestHistoryTypesDocument = gql`
+    query GetHarvestHistoryTypes {
+  getHarvestHistoryTypes {
+    id
+    name
+    displayName
+    description
+    fields
+    isActive
+  }
+}
+    `;
+
+/**
+ * __useGetHarvestHistoryTypesQuery__
+ *
+ * To run a query within a React component, call `useGetHarvestHistoryTypesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetHarvestHistoryTypesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetHarvestHistoryTypesQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetHarvestHistoryTypesQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<GetHarvestHistoryTypesQuery, GetHarvestHistoryTypesQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetHarvestHistoryTypesQuery, GetHarvestHistoryTypesQueryVariables>(GetHarvestHistoryTypesDocument, options);
+      }
+export function useGetHarvestHistoryTypesLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetHarvestHistoryTypesQuery, GetHarvestHistoryTypesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetHarvestHistoryTypesQuery, GetHarvestHistoryTypesQueryVariables>(GetHarvestHistoryTypesDocument, options);
+        }
+export function useGetHarvestHistoryTypesSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetHarvestHistoryTypesQuery, GetHarvestHistoryTypesQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetHarvestHistoryTypesQuery, GetHarvestHistoryTypesQueryVariables>(GetHarvestHistoryTypesDocument, options);
+        }
+export type GetHarvestHistoryTypesQueryHookResult = ReturnType<typeof useGetHarvestHistoryTypesQuery>;
+export type GetHarvestHistoryTypesLazyQueryHookResult = ReturnType<typeof useGetHarvestHistoryTypesLazyQuery>;
+export type GetHarvestHistoryTypesSuspenseQueryHookResult = ReturnType<typeof useGetHarvestHistoryTypesSuspenseQuery>;
+export type GetHarvestHistoryTypesQueryResult = Apollo.QueryResult<GetHarvestHistoryTypesQuery, GetHarvestHistoryTypesQueryVariables>;
+export function refetchGetHarvestHistoryTypesQuery(variables?: GetHarvestHistoryTypesQueryVariables) {
+      return { query: GetHarvestHistoryTypesDocument, variables: variables }
+    }
+export const GetHarvestHistoryDocument = gql`
+    query GetHarvestHistory($harvestId: ID!) {
+  getHarvestHistory(harvestId: $harvestId) {
+    id
+    harvestId
+    stage
+    typeId
+    notes
+    data
+    createdAt
+    type {
+      id
+      name
+      displayName
+      fields
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetHarvestHistoryQuery__
+ *
+ * To run a query within a React component, call `useGetHarvestHistoryQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetHarvestHistoryQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetHarvestHistoryQuery({
+ *   variables: {
+ *      harvestId: // value for 'harvestId'
+ *   },
+ * });
+ */
+export function useGetHarvestHistoryQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetHarvestHistoryQuery, GetHarvestHistoryQueryVariables> & ({ variables: GetHarvestHistoryQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetHarvestHistoryQuery, GetHarvestHistoryQueryVariables>(GetHarvestHistoryDocument, options);
+      }
+export function useGetHarvestHistoryLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetHarvestHistoryQuery, GetHarvestHistoryQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetHarvestHistoryQuery, GetHarvestHistoryQueryVariables>(GetHarvestHistoryDocument, options);
+        }
+export function useGetHarvestHistorySuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetHarvestHistoryQuery, GetHarvestHistoryQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetHarvestHistoryQuery, GetHarvestHistoryQueryVariables>(GetHarvestHistoryDocument, options);
+        }
+export type GetHarvestHistoryQueryHookResult = ReturnType<typeof useGetHarvestHistoryQuery>;
+export type GetHarvestHistoryLazyQueryHookResult = ReturnType<typeof useGetHarvestHistoryLazyQuery>;
+export type GetHarvestHistorySuspenseQueryHookResult = ReturnType<typeof useGetHarvestHistorySuspenseQuery>;
+export type GetHarvestHistoryQueryResult = Apollo.QueryResult<GetHarvestHistoryQuery, GetHarvestHistoryQueryVariables>;
+export function refetchGetHarvestHistoryQuery(variables: GetHarvestHistoryQueryVariables) {
+      return { query: GetHarvestHistoryDocument, variables: variables }
+    }
+export const CreateHarvestHistoryDocument = gql`
+    mutation CreateHarvestHistory($input: CreateHarvestHistoryDto!) {
+  createHarvestHistory(input: $input) {
+    id
+    harvestId
+    stage
+    typeId
+    notes
+    data
+    createdAt
+    type {
+      id
+      name
+      displayName
+      fields
+    }
+  }
+}
+    `;
+export type CreateHarvestHistoryMutationFn = Apollo.MutationFunction<CreateHarvestHistoryMutation, CreateHarvestHistoryMutationVariables>;
+
+/**
+ * __useCreateHarvestHistoryMutation__
+ *
+ * To run a mutation, you first call `useCreateHarvestHistoryMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateHarvestHistoryMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createHarvestHistoryMutation, { data, loading, error }] = useCreateHarvestHistoryMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCreateHarvestHistoryMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CreateHarvestHistoryMutation, CreateHarvestHistoryMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<CreateHarvestHistoryMutation, CreateHarvestHistoryMutationVariables>(CreateHarvestHistoryDocument, options);
+      }
+export type CreateHarvestHistoryMutationHookResult = ReturnType<typeof useCreateHarvestHistoryMutation>;
+export type CreateHarvestHistoryMutationResult = Apollo.MutationResult<CreateHarvestHistoryMutation>;
+export type CreateHarvestHistoryMutationOptions = Apollo.BaseMutationOptions<CreateHarvestHistoryMutation, CreateHarvestHistoryMutationVariables>;
+export const UpdateHarvestHistoryDocument = gql`
+    mutation UpdateHarvestHistory($historyId: ID!, $harvestId: ID!, $input: UpdateHarvestHistoryDto!) {
+  updateHarvestHistory(
+    historyId: $historyId
+    harvestId: $harvestId
+    input: $input
+  ) {
+    id
+    harvestId
+    stage
+    typeId
+    notes
+    data
+    createdAt
+    type {
+      id
+      name
+      displayName
+      fields
+    }
+  }
+}
+    `;
+export type UpdateHarvestHistoryMutationFn = Apollo.MutationFunction<UpdateHarvestHistoryMutation, UpdateHarvestHistoryMutationVariables>;
+
+/**
+ * __useUpdateHarvestHistoryMutation__
+ *
+ * To run a mutation, you first call `useUpdateHarvestHistoryMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateHarvestHistoryMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateHarvestHistoryMutation, { data, loading, error }] = useUpdateHarvestHistoryMutation({
+ *   variables: {
+ *      historyId: // value for 'historyId'
+ *      harvestId: // value for 'harvestId'
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateHarvestHistoryMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdateHarvestHistoryMutation, UpdateHarvestHistoryMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<UpdateHarvestHistoryMutation, UpdateHarvestHistoryMutationVariables>(UpdateHarvestHistoryDocument, options);
+      }
+export type UpdateHarvestHistoryMutationHookResult = ReturnType<typeof useUpdateHarvestHistoryMutation>;
+export type UpdateHarvestHistoryMutationResult = Apollo.MutationResult<UpdateHarvestHistoryMutation>;
+export type UpdateHarvestHistoryMutationOptions = Apollo.BaseMutationOptions<UpdateHarvestHistoryMutation, UpdateHarvestHistoryMutationVariables>;
+export const DeleteHarvestHistoryDocument = gql`
+    mutation DeleteHarvestHistory($historyId: ID!, $harvestId: ID!) {
+  deleteHarvestHistory(historyId: $historyId, harvestId: $harvestId)
+}
+    `;
+export type DeleteHarvestHistoryMutationFn = Apollo.MutationFunction<DeleteHarvestHistoryMutation, DeleteHarvestHistoryMutationVariables>;
+
+/**
+ * __useDeleteHarvestHistoryMutation__
+ *
+ * To run a mutation, you first call `useDeleteHarvestHistoryMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteHarvestHistoryMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteHarvestHistoryMutation, { data, loading, error }] = useDeleteHarvestHistoryMutation({
+ *   variables: {
+ *      historyId: // value for 'historyId'
+ *      harvestId: // value for 'harvestId'
+ *   },
+ * });
+ */
+export function useDeleteHarvestHistoryMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<DeleteHarvestHistoryMutation, DeleteHarvestHistoryMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<DeleteHarvestHistoryMutation, DeleteHarvestHistoryMutationVariables>(DeleteHarvestHistoryDocument, options);
+      }
+export type DeleteHarvestHistoryMutationHookResult = ReturnType<typeof useDeleteHarvestHistoryMutation>;
+export type DeleteHarvestHistoryMutationResult = Apollo.MutationResult<DeleteHarvestHistoryMutation>;
+export type DeleteHarvestHistoryMutationOptions = Apollo.BaseMutationOptions<DeleteHarvestHistoryMutation, DeleteHarvestHistoryMutationVariables>;
+export const GetHarvestByPlantDocument = gql`
+    query GetHarvestByPlant($plantId: ID!) {
+  getHarvestByPlant(plantId: $plantId) {
+    id
+    plantId
+    weight
+    notes
+    stage
+    harvestDate
+    createdAt
+    updatedAt
+    history {
+      id
+      stage
+      typeId
+      notes
+      data
+      createdAt
+      type {
+        id
+        name
+        displayName
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetHarvestByPlantQuery__
+ *
+ * To run a query within a React component, call `useGetHarvestByPlantQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetHarvestByPlantQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetHarvestByPlantQuery({
+ *   variables: {
+ *      plantId: // value for 'plantId'
+ *   },
+ * });
+ */
+export function useGetHarvestByPlantQuery(baseOptions: ApolloReactHooks.QueryHookOptions<GetHarvestByPlantQuery, GetHarvestByPlantQueryVariables> & ({ variables: GetHarvestByPlantQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<GetHarvestByPlantQuery, GetHarvestByPlantQueryVariables>(GetHarvestByPlantDocument, options);
+      }
+export function useGetHarvestByPlantLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetHarvestByPlantQuery, GetHarvestByPlantQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<GetHarvestByPlantQuery, GetHarvestByPlantQueryVariables>(GetHarvestByPlantDocument, options);
+        }
+export function useGetHarvestByPlantSuspenseQuery(baseOptions?: ApolloReactHooks.SkipToken | ApolloReactHooks.SuspenseQueryHookOptions<GetHarvestByPlantQuery, GetHarvestByPlantQueryVariables>) {
+          const options = baseOptions === ApolloReactHooks.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useSuspenseQuery<GetHarvestByPlantQuery, GetHarvestByPlantQueryVariables>(GetHarvestByPlantDocument, options);
+        }
+export type GetHarvestByPlantQueryHookResult = ReturnType<typeof useGetHarvestByPlantQuery>;
+export type GetHarvestByPlantLazyQueryHookResult = ReturnType<typeof useGetHarvestByPlantLazyQuery>;
+export type GetHarvestByPlantSuspenseQueryHookResult = ReturnType<typeof useGetHarvestByPlantSuspenseQuery>;
+export type GetHarvestByPlantQueryResult = Apollo.QueryResult<GetHarvestByPlantQuery, GetHarvestByPlantQueryVariables>;
+export function refetchGetHarvestByPlantQuery(variables: GetHarvestByPlantQueryVariables) {
+      return { query: GetHarvestByPlantDocument, variables: variables }
+    }

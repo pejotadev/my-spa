@@ -169,6 +169,7 @@ export const CREATE_HARVEST = gql`
       plantId
       weight
       notes
+      stage
       harvestDate
       createdAt
       updatedAt
@@ -181,6 +182,126 @@ export const CREATE_HARVEST = gql`
         genetics {
           id
           name
+        }
+      }
+      history {
+        id
+        stage
+        typeId
+        notes
+        data
+        createdAt
+        type {
+          id
+          name
+          displayName
+        }
+      }
+    }
+  }
+`;
+
+export const GET_HARVEST_HISTORY_TYPES = gql`
+  query GetHarvestHistoryTypes {
+    getHarvestHistoryTypes {
+      id
+      name
+      displayName
+      description
+      fields
+      isActive
+    }
+  }
+`;
+
+export const GET_HARVEST_HISTORY = gql`
+  query GetHarvestHistory($harvestId: ID!) {
+    getHarvestHistory(harvestId: $harvestId) {
+      id
+      harvestId
+      stage
+      typeId
+      notes
+      data
+      createdAt
+      type {
+        id
+        name
+        displayName
+        fields
+      }
+    }
+  }
+`;
+
+export const CREATE_HARVEST_HISTORY = gql`
+  mutation CreateHarvestHistory($input: CreateHarvestHistoryDto!) {
+    createHarvestHistory(input: $input) {
+      id
+      harvestId
+      stage
+      typeId
+      notes
+      data
+      createdAt
+      type {
+        id
+        name
+        displayName
+        fields
+      }
+    }
+  }
+`;
+
+export const UPDATE_HARVEST_HISTORY = gql`
+  mutation UpdateHarvestHistory($historyId: ID!, $harvestId: ID!, $input: UpdateHarvestHistoryDto!) {
+    updateHarvestHistory(historyId: $historyId, harvestId: $harvestId, input: $input) {
+      id
+      harvestId
+      stage
+      typeId
+      notes
+      data
+      createdAt
+      type {
+        id
+        name
+        displayName
+        fields
+      }
+    }
+  }
+`;
+
+export const DELETE_HARVEST_HISTORY = gql`
+  mutation DeleteHarvestHistory($historyId: ID!, $harvestId: ID!) {
+    deleteHarvestHistory(historyId: $historyId, harvestId: $harvestId)
+  }
+`;
+
+export const GET_HARVEST_BY_PLANT = gql`
+  query GetHarvestByPlant($plantId: ID!) {
+    getHarvestByPlant(plantId: $plantId) {
+      id
+      plantId
+      weight
+      notes
+      stage
+      harvestDate
+      createdAt
+      updatedAt
+      history {
+        id
+        stage
+        typeId
+        notes
+        data
+        createdAt
+        type {
+          id
+          name
+          displayName
         }
       }
     }

@@ -9,7 +9,9 @@ import {
   DeletePlantHistoryDocument,
   CreatePlantHistoryDocument,
   GetPlantHistoryTypesDocument,
-  CreateHarvestDocument
+  CreateHarvestDocument,
+  GetHarvestByPlantDocument,
+  CreateHarvestHistoryDocument
 } from '../generated/graphql';
 
 const PlantDetailsPage: React.FC = () => {
@@ -21,6 +23,8 @@ const PlantDetailsPage: React.FC = () => {
   const [isAddingHistory, setIsAddingHistory] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'harvest'>('details');
   const [showHarvestModal, setShowHarvestModal] = useState(false);
+  const [showHarvestHistoryModal, setShowHarvestHistoryModal] = useState(false);
+  const [selectedHarvestId, setSelectedHarvestId] = useState<string | null>(null);
   const nutrientMixesRef = useRef<HTMLDivElement>(null);
 
 
@@ -36,6 +40,12 @@ const PlantDetailsPage: React.FC = () => {
   const [harvestFormData, setHarvestFormData] = useState({
     weight: '',
     notes: '',
+  });
+  const [harvestHistoryFormData, setHarvestHistoryFormData] = useState({
+    stage: 'drying',
+    typeId: '',
+    notes: '',
+    data: '',
   });
 
   // Render nutrient mixes dynamically
@@ -407,16 +417,23 @@ const PlantDetailsPage: React.FC = () => {
   });
 
   const { data: historyTypesData } = useQuery(GetPlantHistoryTypesDocument);
+  const { data: harvestData, refetch: refetchHarvest } = useQuery(GetHarvestByPlantDocument, {
+    variables: { plantId: plantId || '' },
+    skip: !plantId,
+  });
 
   const [updatePlantStage] = useMutation(UpdatePlantStageDocument);
   const [updatePlantHistory] = useMutation(UpdatePlantHistoryDocument);
   const [deletePlantHistory] = useMutation(DeletePlantHistoryDocument);
   const [createPlantHistory] = useMutation(CreatePlantHistoryDocument);
   const [createHarvest] = useMutation(CreateHarvestDocument);
+  const [createHarvestHistory] = useMutation(CreateHarvestHistoryDocument);
 
   const plant = plantData?.getPlantById;
   const plantHistory = historyData?.getPlantHistory || [];
   const historyTypes = historyTypesData?.getPlantHistoryTypes || [];
+  const harvest = harvestData?.getHarvestByPlant;
+  const harvestHistory = harvest?.history || [];
 
   // Process stage timeline from plant history
   const stageTimeline = React.useMemo(() => {
@@ -455,6 +472,13 @@ const PlantDetailsPage: React.FC = () => {
     { value: 'clone_seedling', label: 'Clone/Seedling' },
     { value: 'vegetative', label: 'Vegetative' },
     { value: 'flowering', label: 'Flowering' },
+  ];
+
+  const harvestStages = [
+    { value: 'drying', label: 'Drying' },
+    { value: 'trimming', label: 'Trimming' },
+    { value: 'curing', label: 'Curing' },
+    { value: 'storage', label: 'Storage' },
   ];
 
   const handleUpdateStage = async (e: React.FormEvent) => {
@@ -615,6 +639,53 @@ const PlantDetailsPage: React.FC = () => {
   const cancelHarvest = () => {
     setShowHarvestModal(false);
     setHarvestFormData({ weight: '', notes: '' });
+  };
+
+  const openHarvestHistory = (harvestId: string) => {
+    setSelectedHarvestId(harvestId);
+    setShowHarvestHistoryModal(true);
+    setHarvestHistoryFormData({
+      stage: 'drying',
+      typeId: '',
+      notes: '',
+      data: '',
+    });
+  };
+
+  const closeHarvestHistory = () => {
+    setShowHarvestHistoryModal(false);
+    setSelectedHarvestId(null);
+    setHarvestHistoryFormData({
+      stage: 'drying',
+      typeId: '',
+      notes: '',
+      data: '',
+    });
+  };
+
+  const handleCreateHarvestHistory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedHarvestId) return;
+    
+    try {
+      await createHarvestHistory({
+        variables: {
+          input: {
+            harvestId: selectedHarvestId,
+            stage: harvestHistoryFormData.stage,
+            typeId: harvestHistoryFormData.typeId,
+            notes: harvestHistoryFormData.notes || undefined,
+            data: harvestHistoryFormData.data || undefined,
+          }
+        }
+      });
+      closeHarvestHistory();
+      // Refetch harvest data to update the UI
+      await refetchHarvest();
+    } catch (error) {
+      console.error('Error creating harvest history:', error);
+      alert('Failed to create harvest history. Please try again.');
+    }
   };
 
   if (plantLoading) return <div className="text-center py-8">Loading...</div>;
@@ -1461,7 +1532,7 @@ const PlantDetailsPage: React.FC = () => {
               <h3 className="text-lg font-medium text-gray-900">Harvest Information</h3>
             </div>
             <div className="p-6">
-              {plant.harvest ? (
+              {plant?.harvest ? (
                 <div className="space-y-6">
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                     <div className="flex items-center">
@@ -1510,13 +1581,68 @@ const PlantDetailsPage: React.FC = () => {
                         <div className="flex justify-between">
                           <span className="text-gray-600">Days to Harvest:</span>
                           <span className="font-medium">
-                            {plant.harvestDate ? 
-                              Math.ceil((new Date(plant.harvestDate).getTime() - new Date(plant.createdAt).getTime()) / (1000 * 60 * 60 * 24)) 
+                            {plant.harvestDate ?
+                              Math.ceil((new Date(plant.harvestDate).getTime() - new Date(plant.createdAt).getTime()) / (1000 * 60 * 60 * 24))
                               : 'N/A'} days
                           </span>
                         </div>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Harvest History Section */}
+                  <div className="border-t pt-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <h5 className="text-lg font-medium text-gray-900">Harvest History</h5>
+                      <button
+                        onClick={() => {
+                          if (harvest?.id) {
+                            openHarvestHistory(harvest.id);
+                          }
+                        }}
+                        className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        disabled={!harvest?.id}
+                      >
+                        + Add History
+                      </button>
+                    </div>
+                    
+                    {harvestHistory.length > 0 ? (
+                      <div className="space-y-3">
+                        {harvestHistory.map((entry: any) => (
+                          <div key={entry.id} className="bg-gray-50 border border-gray-200 rounded-md p-4">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    {harvestStages.find(s => s.value === entry.stage)?.label || entry.stage}
+                                  </span>
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    {entry.type?.displayName || 'Unknown Type'}
+                                  </span>
+                                </div>
+                                {entry.notes && (
+                                  <p className="text-sm text-gray-700 mb-2">{entry.notes}</p>
+                                )}
+                                {entry.data && (
+                                  <div className="text-xs text-gray-500">
+                                    <strong>Data:</strong> {entry.data}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="text-xs text-gray-400 ml-4">
+                                {new Date(entry.createdAt).toLocaleDateString()}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <p>No harvest history entries yet.</p>
+                        <p className="text-sm">Add entries to track the harvest process.</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -1594,6 +1720,106 @@ const PlantDetailsPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={cancelHarvest}
+                  className="flex-1 inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Harvest History Modal */}
+      {showHarvestHistoryModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Add Harvest History</h3>
+            
+            <form onSubmit={handleCreateHarvestHistory} className="space-y-4">
+              <div>
+                <label htmlFor="harvestStage" className="block text-sm font-medium text-gray-700 mb-1">
+                  Stage *
+                </label>
+                <select
+                  id="harvestStage"
+                  value={harvestHistoryFormData.stage}
+                  onChange={(e) => setHarvestHistoryFormData({ ...harvestHistoryFormData, stage: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                >
+                  {harvestStages.map(stage => (
+                    <option key={stage.value} value={stage.value}>{stage.label}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label htmlFor="harvestType" className="block text-sm font-medium text-gray-700 mb-1">
+                  Type *
+                </label>
+                <select
+                  id="harvestType"
+                  value={harvestHistoryFormData.typeId}
+                  onChange={(e) => setHarvestHistoryFormData({ ...harvestHistoryFormData, typeId: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                >
+                  <option value="">Select type</option>
+                  <option value="harvest_type1">Notes</option>
+                  <option value="harvest_type2">Weight on Harvest</option>
+                </select>
+              </div>
+              
+              <div>
+                <label htmlFor="harvestHistoryNotes" className="block text-sm font-medium text-gray-700 mb-1">
+                  Notes
+                </label>
+                <textarea
+                  id="harvestHistoryNotes"
+                  value={harvestHistoryFormData.notes}
+                  onChange={(e) => setHarvestHistoryFormData({ ...harvestHistoryFormData, notes: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="Optional notes"
+                  rows={3}
+                />
+              </div>
+              
+              {harvestHistoryFormData.typeId === 'harvest_type2' && (
+                <div>
+                  <label htmlFor="harvestWeight" className="block text-sm font-medium text-gray-700 mb-1">
+                    Weight (grams) *
+                  </label>
+                  <input
+                    type="number"
+                    id="harvestWeight"
+                    value={harvestHistoryFormData.data ? JSON.parse(harvestHistoryFormData.data).weight || '' : ''}
+                    onChange={(e) => {
+                      const weight = parseFloat(e.target.value);
+                      setHarvestHistoryFormData({
+                        ...harvestHistoryFormData,
+                        data: JSON.stringify({ weight, notes: harvestHistoryFormData.notes })
+                      });
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Enter weight in grams"
+                    step="0.1"
+                    min="0"
+                    required
+                  />
+                </div>
+              )}
+              
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  className="flex-1 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                >
+                  Add History
+                </button>
+                <button
+                  type="button"
+                  onClick={closeHarvestHistory}
                   className="flex-1 inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   Cancel
