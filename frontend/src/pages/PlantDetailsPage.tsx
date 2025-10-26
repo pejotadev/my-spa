@@ -133,6 +133,37 @@ const PlantDetailsPage: React.FC = () => {
     }
   }, [historyFormData.data, historyFormData.typeId]);
 
+  // Initialize edit form values when editing starts
+  useEffect(() => {
+    if (isEditingHistory && historyFormData.data) {
+      try {
+        const data = JSON.parse(historyFormData.data);
+        
+        // Set default values for water type
+        if (historyFormData.typeId === 'type2') {
+          const quantityInput = document.getElementById('editQuantity') as HTMLInputElement;
+          const volumeUnitSelect = document.getElementById('editVolumeUnit') as HTMLSelectElement;
+          if (quantityInput) quantityInput.value = data.quantity || '';
+          if (volumeUnitSelect) volumeUnitSelect.value = data.volumeUnit || 'L';
+        }
+        
+        // Set default values for pruning type
+        if (historyFormData.typeId === 'type3') {
+          const pruningTypeSelect = document.getElementById('editPruningType') as HTMLSelectElement;
+          if (pruningTypeSelect) pruningTypeSelect.value = data.pruningType || '';
+        }
+        
+        // Set default values for nutrients type
+        if (historyFormData.typeId === 'type4') {
+          const applicationMethodSelect = document.getElementById('editApplicationMethod') as HTMLSelectElement;
+          if (applicationMethodSelect) applicationMethodSelect.value = data.applicationMethod || '';
+        }
+      } catch (error) {
+        console.error('Error parsing history data:', error);
+      }
+    }
+  }, [isEditingHistory, historyFormData.typeId, historyFormData.data]);
+
   const { data: plantData, loading: plantLoading, refetch: refetchPlant } = useQuery(GetPlantByIdDocument, {
     variables: { plantId: plantId!, environmentId: environmentId! },
     skip: !plantId || !environmentId,
@@ -221,7 +252,9 @@ const PlantDetailsPage: React.FC = () => {
           environmentId,
           input: {
             stage: historyFormData.stage,
+            typeId: historyFormData.typeId || undefined,
             notes: historyFormData.notes || undefined,
+            data: historyFormData.data || undefined,
           },
         },
       });
@@ -255,8 +288,8 @@ const PlantDetailsPage: React.FC = () => {
     setHistoryFormData({
       stage: entry.stage,
       notes: entry.notes || '',
-      typeId: '',
-      data: '',
+      typeId: entry.typeId || '',
+      data: entry.data || '',
     });
   };
 
@@ -689,19 +722,166 @@ const PlantDetailsPage: React.FC = () => {
                             </select>
                           </div>
                           <div>
-                            <label htmlFor="editNotes" className="block text-sm font-medium text-gray-700 mb-2">
-                              Notes
+                            <label htmlFor="editTypeId" className="block text-sm font-medium text-gray-700 mb-2">
+                              History Type *
                             </label>
-                            <input
-                              type="text"
-                              id="editNotes"
-                              value={historyFormData.notes}
-                              onChange={(e) => setHistoryFormData({ ...historyFormData, notes: e.target.value })}
+                            <select
+                              id="editTypeId"
+                              value={historyFormData.typeId}
+                              onChange={(e) => setHistoryFormData({ ...historyFormData, typeId: e.target.value })}
                               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                              placeholder="Optional notes"
-                            />
+                              required
+                            >
+                              <option value="">Select history type</option>
+                              {historyTypesData?.getPlantHistoryTypes?.map((type: any) => (
+                                <option key={type.id} value={type.id}>{type.displayName}</option>
+                              ))}
+                            </select>
                           </div>
                         </div>
+                        
+                        <div>
+                          <label htmlFor="editNotes" className="block text-sm font-medium text-gray-700 mb-2">
+                            Notes
+                          </label>
+                          <input
+                            type="text"
+                            id="editNotes"
+                            value={historyFormData.notes}
+                            onChange={(e) => setHistoryFormData({ ...historyFormData, notes: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                            placeholder="Optional notes"
+                          />
+                        </div>
+
+                        {/* Water type specific fields */}
+                        {historyFormData.typeId === 'type2' && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label htmlFor="editQuantity" className="block text-sm font-medium text-gray-700 mb-2">
+                                Quantity *
+                              </label>
+                              <input
+                                type="number"
+                                id="editQuantity"
+                                onChange={(e) => {
+                                  const quantity = e.target.value;
+                                  const currentData = JSON.parse(historyFormData.data || '{}');
+                                  setHistoryFormData({ 
+                                    ...historyFormData, 
+                                    data: JSON.stringify({ 
+                                      ...currentData, 
+                                      quantity: quantity,
+                                      volumeUnit: currentData.volumeUnit || 'L'
+                                    })
+                                  });
+                                }}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                                placeholder="e.g., 2"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <label htmlFor="editVolumeUnit" className="block text-sm font-medium text-gray-700 mb-2">
+                                Volume Unit *
+                              </label>
+                              <select
+                                id="editVolumeUnit"
+                                onChange={(e) => {
+                                  const volumeUnit = e.target.value;
+                                  const currentData = JSON.parse(historyFormData.data || '{}');
+                                  setHistoryFormData({ 
+                                    ...historyFormData, 
+                                    data: JSON.stringify({ 
+                                      ...currentData, 
+                                      quantity: currentData.quantity || '',
+                                      volumeUnit: volumeUnit
+                                    })
+                                  });
+                                }}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                                required
+                              >
+                                <option value="L">Liters (L)</option>
+                                <option value="ml">Milliliters (ml)</option>
+                                <option value="gal">Gallons (gal)</option>
+                                <option value="qt">Quarts (qt)</option>
+                              </select>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Pruning type specific fields */}
+                        {historyFormData.typeId === 'type3' && (
+                          <div>
+                            <label htmlFor="editPruningType" className="block text-sm font-medium text-gray-700 mb-2">
+                              Pruning Type *
+                            </label>
+                            <select
+                              id="editPruningType"
+                              onChange={(e) => {
+                                const pruningType = e.target.value;
+                                setHistoryFormData({ 
+                                  ...historyFormData, 
+                                  data: JSON.stringify({ pruningType })
+                                });
+                              }}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                              required
+                            >
+                              <option value="">Select pruning type</option>
+                              <option value="Topping">Topping</option>
+                              <option value="FIM">FIM</option>
+                              <option value="LST">LST</option>
+                              <option value="Defoliation">Defoliation</option>
+                              <option value="Lollipopping">Lollipopping</option>
+                              <option value="Super Cropping">Super Cropping</option>
+                            </select>
+                          </div>
+                        )}
+
+                        {/* Nutrients type specific fields */}
+                        {historyFormData.typeId === 'type4' && (
+                          <div className="space-y-4">
+                            <div>
+                              <label htmlFor="editApplicationMethod" className="block text-sm font-medium text-gray-700 mb-2">
+                                Application Method *
+                              </label>
+                              <select
+                                id="editApplicationMethod"
+                                onChange={(e) => {
+                                  const applicationMethod = e.target.value;
+                                  const currentData = JSON.parse(historyFormData.data || '{}');
+                                  setHistoryFormData({ 
+                                    ...historyFormData, 
+                                    data: JSON.stringify({ 
+                                      ...currentData, 
+                                      applicationMethod,
+                                      nutrientMixes: currentData.nutrientMixes || []
+                                    })
+                                  });
+                                }}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                                required
+                              >
+                                <option value="">Select application method</option>
+                                <option value="Liquid">Liquid</option>
+                                <option value="Spray">Spray</option>
+                                <option value="Solid">Solid</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Nutrient Mixes *
+                              </label>
+                              <div className="text-sm text-gray-600 p-3 bg-gray-50 rounded-md">
+                                <p>Nutrient mixes editing will be available in a future update.</p>
+                                <p>Current data: {historyFormData.data}</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
                         <div className="flex gap-3">
                           <button
                             type="submit"
