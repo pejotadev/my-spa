@@ -228,21 +228,23 @@ const PlantManager: React.FC<PlantManagerProps> = ({ environmentId }) => {
                     }}
                     onInputChange={(inputValue) => {
                       setCustomGeneticsName(inputValue);
-                      // Se não encontrar a genética digitada, limpar o geneticsId
-                      if (!genetics.find(g => g.name.toLowerCase() === inputValue.toLowerCase())) {
-                        setFormData({ ...formData, geneticsId: '' });
-                      }
+                      // Não limpar o geneticsId aqui - deixar apenas para onChange
                     }}
                     onBlur={() => {
-                      // Se tem um nome digitado mas não é uma genética existente, mostrar modal
-                      if (customGeneticsName && !genetics.find(g => g.name.toLowerCase() === customGeneticsName.toLowerCase()) && !formData.geneticsId) {
+                      // Se tem um nome digitado mas não é uma genética existente e não tem geneticsId selecionado, mostrar modal
+                      if (customGeneticsName && 
+                          !genetics.find(g => g.name.toLowerCase() === customGeneticsName.toLowerCase()) && 
+                          !formData.geneticsId) {
                         setPendingGeneticsName(customGeneticsName);
                         setShowGeneticsModal(true);
                       }
                     }}
                     onKeyDown={(e) => {
-                      // Se pressionar Enter e tem um nome digitado mas não é uma genética existente, mostrar modal
-                      if (e.key === 'Enter' && customGeneticsName && !genetics.find(g => g.name.toLowerCase() === customGeneticsName.toLowerCase()) && !formData.geneticsId) {
+                      // Se pressionar Enter e tem um nome digitado mas não é uma genética existente e não tem geneticsId selecionado, mostrar modal
+                      if (e.key === 'Enter' && 
+                          customGeneticsName && 
+                          !genetics.find(g => g.name.toLowerCase() === customGeneticsName.toLowerCase()) && 
+                          !formData.geneticsId) {
                         e.preventDefault();
                         setPendingGeneticsName(customGeneticsName);
                         setShowGeneticsModal(true);
