@@ -410,6 +410,38 @@ const PlantDetailsPage: React.FC = () => {
   const plantHistory = historyData?.getPlantHistory || [];
   const historyTypes = historyTypesData?.getPlantHistoryTypes || [];
 
+  // Process stage timeline from plant history
+  const stageTimeline = React.useMemo(() => {
+    if (!plantHistory.length) return [];
+    
+    // Sort all entries by date (oldest first) to process stage transitions
+    const sortedHistory = [...plantHistory].sort((a: any, b: any) => 
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+    
+    // Find only actual stage transitions (when stage changes)
+    const stageTransitions = [];
+    let lastStage = null;
+    
+    for (const entry of sortedHistory) {
+      if (entry.stage && entry.stage !== lastStage) {
+        stageTransitions.push({
+          stage: entry.stage,
+          date: new Date(entry.createdAt),
+          formattedDate: new Date(entry.createdAt).toLocaleDateString('en-US', {
+            month: '2-digit',
+            day: '2-digit',
+            year: 'numeric'
+          })
+        });
+        lastStage = entry.stage;
+      }
+    }
+    
+    // Return in reverse order (newest first) for timeline display
+    return stageTransitions.reverse();
+  }, [plantHistory]);
+
   const plantStages = [
     { value: 'germination', label: 'Germination' },
     { value: 'clone_seedling', label: 'Clone/Seedling' },
@@ -681,6 +713,74 @@ const PlantDetailsPage: React.FC = () => {
             </form>
           </div>
         )}
+
+        {/* Stage Timeline */}
+        <div className="bg-white rounded-lg shadow mb-8">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-lg font-medium text-gray-900">Stage Timeline</h3>
+          </div>
+          <div className="p-6">
+            {stageTimeline.length > 0 ? (
+              <div className="relative">
+                {/* Timeline line */}
+                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-green-400 to-blue-400"></div>
+                
+                {stageTimeline.map((timelineItem: any, index: number) => {
+                  const stageInfo = plantStages.find(s => s.value === timelineItem.stage);
+                  
+                  return (
+                    <div key={index} className="relative flex items-center mb-6 last:mb-0">
+                      {/* Timeline dot */}
+                      <div className={`relative z-10 w-8 h-8 rounded-full border-4 border-white shadow-lg flex items-center justify-center ${
+                        timelineItem.stage === 'flowering' ? 'bg-purple-500' :
+                        timelineItem.stage === 'vegetative' ? 'bg-green-500' :
+                        timelineItem.stage === 'clone_seedling' ? 'bg-blue-500' :
+                        'bg-yellow-500'
+                      }`}>
+                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                      </div>
+                      
+                      {/* Content */}
+                      <div className="ml-6 flex-1">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="text-lg font-semibold text-gray-900">
+                              {stageInfo?.label || timelineItem.stage}
+                            </h4>
+                            <p className="text-sm text-gray-500">
+                              Stage transition
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-medium text-gray-900">
+                              {timelineItem.formattedDate}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {timelineItem.date.toLocaleTimeString('en-US', {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <p className="text-gray-600">No stage changes recorded yet.</p>
+                <p className="text-sm text-gray-500 mt-1">Stage changes will appear here as you update the plant's growth stage.</p>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Plant History */}
         <div className="bg-white rounded-lg shadow">
