@@ -66,6 +66,44 @@ const PlantDetailsPage: React.FC = () => {
         });
       };
 
+      // Global functions for edit form nutrient mixes
+      (window as any).updateEditNutrientMix = (index: number, field: string, value: string) => {
+        const currentData = JSON.parse(historyFormData.data || '{}');
+        const nutrientMixes = [...(currentData.nutrientMixes || [])];
+        
+        if (field.includes('.')) {
+          const [parent, child] = field.split('.');
+          if (!nutrientMixes[index][parent]) {
+            nutrientMixes[index][parent] = {};
+          }
+          nutrientMixes[index][parent][child] = value;
+        } else {
+          nutrientMixes[index][field] = value;
+        }
+        
+        setHistoryFormData({
+          ...historyFormData,
+          data: JSON.stringify({
+            ...currentData,
+            nutrientMixes
+          })
+        });
+      };
+
+      (window as any).removeEditNutrientMix = (index: number) => {
+        const currentData = JSON.parse(historyFormData.data || '{}');
+        const nutrientMixes = [...(currentData.nutrientMixes || [])];
+        nutrientMixes.splice(index, 1);
+        
+        setHistoryFormData({
+          ...historyFormData,
+          data: JSON.stringify({
+            ...currentData,
+            nutrientMixes
+          })
+        });
+      };
+
       if (nutrientMixesRef.current) {
         nutrientMixesRef.current.innerHTML = '';
         
@@ -74,52 +112,80 @@ const PlantDetailsPage: React.FC = () => {
           mixDiv.className = 'border border-gray-300 rounded-md p-3 bg-gray-50';
           
           mixDiv.innerHTML = `
-            <div class="flex justify-between items-center mb-2">
-              <h4 class="font-medium text-gray-700">Nutrient Mix ${index + 1}</h4>
-              <button type="button" onclick="removeNutrientMix(${index})" class="text-red-500 hover:text-red-700 text-sm">Remove</button>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label class="block text-sm font-medium text-gray-600 mb-1">Nutrient Name *</label>
-                <input type="text" value="${mix.nutrientName || ''}" onchange="updateNutrientMix(${index}, 'nutrientName', this.value)" 
-                       class="w-full px-2 py-1 border border-gray-300 rounded text-sm" placeholder="e.g., NPK 20-20-20" required />
+            <div class="space-y-4">
+              <div class="flex justify-between items-center">
+                <h4 class="font-medium text-gray-700">Nutrient Mix ${index + 1}</h4>
+                <button type="button" onclick="removeNutrientMix(${index})" class="text-red-500 hover:text-red-700 text-sm">Remove</button>
               </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-600 mb-1">Solvent Quantity *</label>
-              <input type="number" value="${mix.solvent?.quantity || ''}" onchange="updateNutrientMix(${index}, 'solvent', {quantity: this.value, volumeUnit: '${mix.solvent?.volumeUnit || 'L'}'})" 
-                     class="w-full px-2 py-1 border border-gray-300 rounded text-sm" placeholder="e.g., 1" required />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-600 mb-1">Solvent Volume Unit *</label>
-              <select onchange="updateNutrientMix(${index}, 'solvent', {quantity: '${mix.solvent?.quantity || ''}', volumeUnit: this.value})" 
-                      class="w-full px-2 py-1 border border-gray-300 rounded text-sm">
-                <option value="ml" ${mix.solvent?.volumeUnit === 'ml' ? 'selected' : ''}>ml</option>
-                <option value="L" ${mix.solvent?.volumeUnit === 'L' ? 'selected' : ''}>L</option>
-                <option value="gal" ${mix.solvent?.volumeUnit === 'gal' ? 'selected' : ''}>gal</option>
-                <option value="qt" ${mix.solvent?.volumeUnit === 'qt' ? 'selected' : ''}>qt</option>
-              </select>
-            </div>
-              ${applicationMethod === 'Solid' ? `
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-600 mb-1">Weight *</label>
-                  <input type="number" value="${mix.amount?.weight || ''}" onchange="updateNutrientMix(${index}, 'amount', {weight: this.value})" 
-                         class="w-full px-2 py-1 border border-gray-300 rounded text-sm" placeholder="e.g., 5" required />
+                  <label class="block text-sm font-medium text-gray-600 mb-1">Nutrient Name *</label>
+                  <input type="text" value="${mix.nutrientName || ''}" onchange="updateNutrientMix(${index}, 'nutrientName', this.value)" 
+                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" 
+                         placeholder="e.g., NPK 20-20-20" required />
+                </div>
+                <div class="flex items-end">
+                  <button type="button" onclick="removeNutrientMix(${index})" class="text-red-500 hover:text-red-700 text-sm">Remove Mix</button>
+                </div>
+              </div>
+              
+              ${applicationMethod === 'Solid' ? `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Weight *</label>
+                    <input type="number" value="${mix.amount?.weight || ''}" onchange="updateNutrientMix(${index}, 'amount', {weight: this.value})" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" 
+                           placeholder="e.g., 5" required />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Solvent (Water)</label>
+                    <div class="flex gap-2">
+                      <input type="number" value="${mix.solvent?.quantity || ''}" onchange="updateNutrientMix(${index}, 'solvent', {quantity: this.value, volumeUnit: '${mix.solvent?.volumeUnit || 'L'}'})" 
+                             class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" 
+                             placeholder="Quantity" />
+                      <select onchange="updateNutrientMix(${index}, 'solvent', {quantity: '${mix.solvent?.quantity || ''}', volumeUnit: this.value})" 
+                              class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="L" ${mix.solvent?.volumeUnit === 'L' ? 'selected' : ''}>L</option>
+                        <option value="ml" ${mix.solvent?.volumeUnit === 'ml' ? 'selected' : ''}>ml</option>
+                        <option value="gal" ${mix.solvent?.volumeUnit === 'gal' ? 'selected' : ''}>gal</option>
+                        <option value="qt" ${mix.solvent?.volumeUnit === 'qt' ? 'selected' : ''}>qt</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
               ` : `
-                <div>
-                  <label class="block text-sm font-medium text-gray-600 mb-1">Quantity *</label>
-                  <input type="number" value="${mix.amount?.quantity || ''}" onchange="updateNutrientMix(${index}, 'amount', {quantity: this.value, volumeUnit: '${mix.amount?.volumeUnit || 'ml'}'})" 
-                         class="w-full px-2 py-1 border border-gray-300 rounded text-sm" placeholder="e.g., 10" required />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-600 mb-1">Volume Unit *</label>
-                  <select onchange="updateNutrientMix(${index}, 'amount', {quantity: '${mix.amount?.quantity || ''}', volumeUnit: this.value})" 
-                          class="w-full px-2 py-1 border border-gray-300 rounded text-sm">
-                    <option value="ml" ${mix.amount?.volumeUnit === 'ml' ? 'selected' : ''}>ml</option>
-                    <option value="L" ${mix.amount?.volumeUnit === 'L' ? 'selected' : ''}>L</option>
-                    <option value="gal" ${mix.amount?.volumeUnit === 'gal' ? 'selected' : ''}>gal</option>
-                    <option value="qt" ${mix.amount?.volumeUnit === 'qt' ? 'selected' : ''}>qt</option>
-                  </select>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Amount *</label>
+                    <div class="flex gap-2">
+                      <input type="number" value="${mix.amount?.quantity || ''}" onchange="updateNutrientMix(${index}, 'amount', {quantity: this.value, volumeUnit: '${mix.amount?.volumeUnit || 'ml'}'})" 
+                             class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" 
+                             placeholder="Quantity" required />
+                      <select onchange="updateNutrientMix(${index}, 'amount', {quantity: '${mix.amount?.quantity || ''}', volumeUnit: this.value})" 
+                              class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="ml" ${mix.amount?.volumeUnit === 'ml' ? 'selected' : ''}>ml</option>
+                        <option value="L" ${mix.amount?.volumeUnit === 'L' ? 'selected' : ''}>L</option>
+                        <option value="gal" ${mix.amount?.volumeUnit === 'gal' ? 'selected' : ''}>gal</option>
+                        <option value="qt" ${mix.amount?.volumeUnit === 'qt' ? 'selected' : ''}>qt</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Solvent (Water)</label>
+                    <div class="flex gap-2">
+                      <input type="number" value="${mix.solvent?.quantity || ''}" onchange="updateNutrientMix(${index}, 'solvent', {quantity: this.value, volumeUnit: '${mix.solvent?.volumeUnit || 'L'}'})" 
+                             class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" 
+                             placeholder="Quantity" />
+                      <select onchange="updateNutrientMix(${index}, 'solvent', {quantity: '${mix.solvent?.quantity || ''}', volumeUnit: this.value})" 
+                              class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="L" ${mix.solvent?.volumeUnit === 'L' ? 'selected' : ''}>L</option>
+                        <option value="ml" ${mix.solvent?.volumeUnit === 'ml' ? 'selected' : ''}>ml</option>
+                        <option value="gal" ${mix.solvent?.volumeUnit === 'gal' ? 'selected' : ''}>gal</option>
+                        <option value="qt" ${mix.solvent?.volumeUnit === 'qt' ? 'selected' : ''}>qt</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
               `}
             </div>
@@ -160,6 +226,165 @@ const PlantDetailsPage: React.FC = () => {
         }
       } catch (error) {
         console.error('Error parsing history data:', error);
+      }
+    }
+  }, [isEditingHistory, historyFormData.typeId, historyFormData.data]);
+
+  // Render nutrient mixes for edit form
+  useEffect(() => {
+    if (isEditingHistory && historyFormData.typeId === 'type4' && historyFormData.data) {
+      const container = document.getElementById('editNutrientMixesContainer');
+      if (container) {
+        container.innerHTML = '';
+        
+        try {
+          const data = JSON.parse(historyFormData.data);
+          const nutrientMixes = data.nutrientMixes || [];
+          const applicationMethod = data.applicationMethod;
+          
+          nutrientMixes.forEach((mix: any, index: number) => {
+            const mixDiv = document.createElement('div');
+            mixDiv.className = 'border border-gray-200 rounded-lg p-4 bg-gray-50';
+            
+            if (applicationMethod === 'Solid') {
+              mixDiv.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nutrient Name *</label>
+                    <input 
+                      type="text" 
+                      value="${mix.nutrientName || ''}"
+                      onchange="updateEditNutrientMix(${index}, 'nutrientName', this.value)"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                      placeholder="e.g., NPK 20-20-20"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Weight *</label>
+                    <input 
+                      type="number" 
+                      value="${mix.amount?.weight || ''}"
+                      onchange="updateEditNutrientMix(${index}, 'amount.weight', this.value)"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                      placeholder="e.g., 10"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Solvent (Water)</label>
+                    <div class="flex gap-2">
+                      <input 
+                        type="number" 
+                        value="${mix.solvent?.quantity || ''}"
+                        onchange="updateEditNutrientMix(${index}, 'solvent.quantity', this.value)"
+                        class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        placeholder="Quantity"
+                      />
+                      <select 
+                        value="${mix.solvent?.volumeUnit || 'L'}"
+                        onchange="updateEditNutrientMix(${index}, 'solvent.volumeUnit', this.value)"
+                        class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                      >
+                        <option value="L">L</option>
+                        <option value="ml">ml</option>
+                        <option value="gal">gal</option>
+                        <option value="qt">qt</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <button 
+                  type="button" 
+                  onclick="removeEditNutrientMix(${index})"
+                  class="mt-2 text-red-600 hover:text-red-800 text-sm font-medium"
+                >
+                  Remove Mix
+                </button>
+              `;
+            } else {
+              mixDiv.innerHTML = `
+                <div class="space-y-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Nutrient Name *</label>
+                      <input 
+                        type="text" 
+                        value="${mix.nutrientName || ''}"
+                        onchange="updateEditNutrientMix(${index}, 'nutrientName', this.value)"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        placeholder="e.g., NPK 20-20-20"
+                        required
+                      />
+                    </div>
+                    <div class="flex items-end">
+                      <button 
+                        type="button" 
+                        onclick="removeEditNutrientMix(${index})"
+                        class="text-red-600 hover:text-red-800 text-sm font-medium"
+                      >
+                        Remove Mix
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Amount *</label>
+                      <div class="flex gap-2">
+                        <input 
+                          type="number" 
+                          value="${mix.amount?.quantity || ''}"
+                          onchange="updateEditNutrientMix(${index}, 'amount.quantity', this.value)"
+                          class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                          placeholder="Quantity"
+                          required
+                        />
+                        <select 
+                          value="${mix.amount?.volumeUnit || 'ml'}"
+                          onchange="updateEditNutrientMix(${index}, 'amount.volumeUnit', this.value)"
+                          class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                          required
+                        >
+                          <option value="ml">ml</option>
+                          <option value="L">L</option>
+                          <option value="gal">gal</option>
+                          <option value="qt">qt</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Solvent (Water)</label>
+                      <div class="flex gap-2">
+                        <input 
+                          type="number" 
+                          value="${mix.solvent?.quantity || ''}"
+                          onchange="updateEditNutrientMix(${index}, 'solvent.quantity', this.value)"
+                          class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                          placeholder="Quantity"
+                        />
+                        <select 
+                          value="${mix.solvent?.volumeUnit || 'L'}"
+                          onchange="updateEditNutrientMix(${index}, 'solvent.volumeUnit', this.value)"
+                          class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        >
+                          <option value="L">L</option>
+                          <option value="ml">ml</option>
+                          <option value="gal">gal</option>
+                          <option value="qt">qt</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }
+            
+            container.appendChild(mixDiv);
+          });
+        } catch (error) {
+          console.error('Error rendering nutrient mixes:', error);
+        }
       }
     }
   }, [isEditingHistory, historyFormData.typeId, historyFormData.data]);
@@ -870,14 +1095,48 @@ const PlantDetailsPage: React.FC = () => {
                                 <option value="Solid">Solid</option>
                               </select>
                             </div>
+
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Nutrient Mixes *
                               </label>
-                              <div className="text-sm text-gray-600 p-3 bg-gray-50 rounded-md">
-                                <p>Nutrient mixes editing will be available in a future update.</p>
-                                <p>Current data: {historyFormData.data}</p>
+                              <div id="editNutrientMixesContainer" className="space-y-3">
+                                {/* Nutrient mixes will be rendered dynamically */}
                               </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const currentData = JSON.parse(historyFormData.data || '{}');
+                                  const nutrientMixes = currentData.nutrientMixes || [];
+                                  const applicationMethod = currentData.applicationMethod;
+                                  
+                                  let newMix;
+                                  if (applicationMethod === 'Solid') {
+                                    newMix = {
+                                      nutrientName: '',
+                                      amount: { weight: '' },
+                                      solvent: { quantity: '', volumeUnit: 'L' }
+                                    };
+                                  } else {
+                                    newMix = {
+                                      nutrientName: '',
+                                      amount: { quantity: '', volumeUnit: 'ml' },
+                                      solvent: { quantity: '', volumeUnit: 'L' }
+                                    };
+                                  }
+                                  
+                                  setHistoryFormData({ 
+                                    ...historyFormData, 
+                                    data: JSON.stringify({ 
+                                      ...currentData, 
+                                      nutrientMixes: [...nutrientMixes, newMix]
+                                    })
+                                  });
+                                }}
+                                className="mt-2 px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                              >
+                                + Add Nutrient Mix
+                              </button>
                             </div>
                           </div>
                         )}
