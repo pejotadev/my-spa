@@ -151,6 +151,7 @@ model Plant {
   genetics   Genetics     @relation(fields: [geneticsId], references: [id], onDelete: Cascade)
   environment Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
   history    PlantHistory[]
+  harvests   Harvest[]
 
   @@map("plants")
 }
@@ -183,4 +184,18 @@ model PlantHistory {
   type  PlantHistoryType @relation(fields: [typeId], references: [id], onDelete: Cascade)
 
   @@map("plant_history")
+}
+
+model Harvest {
+  id          String   @id @default(cuid())
+  plantId     String   // Reference to the harvested plant
+  weight      Float?   // Weight after complete harvest (in grams)
+  notes       String?  // Additional harvest notes
+  harvestDate DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  plant Plant @relation(fields: [plantId], references: [id], onDelete: Cascade)
+
+  @@map("harvests")
 }

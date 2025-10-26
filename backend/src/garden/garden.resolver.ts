@@ -7,6 +7,7 @@ import { Plant } from './entities/plant.entity';
 import { Genetics } from './entities/genetics.entity';
 import { PlantHistory } from './entities/plant-history.entity';
 import { PlantHistoryType } from './entities/plant-history-type.entity';
+import { Harvest } from './entities/harvest.entity';
 import { CreateEnvironmentDto } from './dto/create-environment.dto';
 import { UpdateEnvironmentDto } from './dto/update-environment.dto';
 import { CreateLightDto } from './dto/create-light.dto';
@@ -19,6 +20,7 @@ import { CreatePlantHistoryDto } from './dto/create-plant-history.dto';
 import { UpdatePlantStageDto } from './dto/update-plant-stage.dto';
 import { UpdatePlantHistoryDto } from './dto/update-plant-history.dto';
 import { HarvestPlantDto } from './dto/harvest-plant.dto';
+import { CreateHarvestDto } from './dto/create-harvest.dto';
 import { CreatePlantHistoryTypeDto } from './dto/plant-history-type.dto';
 import { UpdatePlantHistoryTypeDto } from './dto/plant-history-type.dto';
 import { CurrentUser } from '../auth/current-user.decorator';
@@ -218,12 +220,12 @@ export class GardenResolver {
     return this.gardenService.updatePlantStage(plantId, environmentId, input, user.userId);
   }
 
-  @Mutation(() => Plant)
-  async harvestPlant(
-    @Args('input') input: HarvestPlantDto,
+  @Mutation(() => Harvest)
+  async createHarvest(
+    @Args('input') input: CreateHarvestDto,
     @CurrentUser() user: any
-  ): Promise<Plant> {
-    return this.gardenService.harvestPlant(input.plantId, input.environmentId, user.userId);
+  ): Promise<Harvest> {
+    return this.gardenService.createHarvest(input, user.userId);
   }
 
   @Mutation(() => PlantHistory)

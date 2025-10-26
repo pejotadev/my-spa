@@ -7,6 +7,7 @@ import { Plant } from './entities/plant.entity';
 import { Genetics } from './entities/genetics.entity';
 import { PlantHistory } from './entities/plant-history.entity';
 import { PlantHistoryType } from './entities/plant-history-type.entity';
+import { Harvest } from './entities/harvest.entity';
 import { CreateEnvironmentDto } from './dto/create-environment.dto';
 import { UpdateEnvironmentDto } from './dto/update-environment.dto';
 import { CreateLightDto } from './dto/create-light.dto';
@@ -18,6 +19,7 @@ import { UpdateGeneticsDto } from './dto/update-genetics.dto';
 import { CreatePlantHistoryDto } from './dto/create-plant-history.dto';
 import { UpdatePlantStageDto } from './dto/update-plant-stage.dto';
 import { UpdatePlantHistoryDto } from './dto/update-plant-history.dto';
+import { CreateHarvestDto } from './dto/create-harvest.dto';
 import { CreatePlantHistoryTypeDto } from './dto/plant-history-type.dto';
 import { UpdatePlantHistoryTypeDto } from './dto/plant-history-type.dto';
 
@@ -320,15 +322,15 @@ export class GardenService {
     return updatedPlant;
   }
 
-  async harvestPlant(plantId: string, environmentId: string, userId: string): Promise<Plant> {
+  async createHarvest(data: CreateHarvestDto, userId: string): Promise<Harvest> {
     // Verificar se o environment pertence ao usuário
-    const environment = await EnvironmentRepository.getEnvironmentByIdAndUser(environmentId, userId);
+    const environment = await EnvironmentRepository.getEnvironmentByIdAndUser(data.environmentId, userId);
     if (!environment) {
       throw new NotFoundException('Environment not found');
     }
 
     // Verificar se a planta pertence ao environment
-    const plant = await EnvironmentRepository.getPlantByIdAndEnvironment(plantId, environmentId);
+    const plant = await EnvironmentRepository.getPlantByIdAndEnvironment(data.plantId, data.environmentId);
     if (!plant) {
       throw new NotFoundException('Plant not found');
     }
@@ -343,22 +345,38 @@ export class GardenService {
       throw new ForbiddenException('Plant has already been harvested');
     }
 
+    // Criar o registro de harvest
+    const harvest = await this.prisma.harvest.create({
+      data: {
+        plantId: data.plantId,
+        weight: data.weight,
+        notes: data.notes,
+        harvestDate: new Date(),
+      },
+      include: {
+        plant: {
+          include: {
+            genetics: true,
+          },
+        },
+      },
+    });
+
     // Marcar a planta como colhida
-    const harvestDate = new Date();
-    const updatedPlant = await EnvironmentRepository.updatePlant(plantId, { 
+    await EnvironmentRepository.updatePlant(data.plantId, { 
       harvest: true,
-      harvestDate: harvestDate
+      harvestDate: harvest.harvestDate
     });
 
     // Criar entrada no histórico automaticamente
     await EnvironmentRepository.createPlantHistory({
-      plantId,
+      plantId: data.plantId,
       stage: 'flowering', // Manter o stage atual
       typeId: 'type1', // Default to 'notes' type
-      notes: `Plant harvested on ${harvestDate.toLocaleDateString()}`,
+      notes: `Plant harvested${data.weight ? ` - Weight: ${data.weight}g` : ''}${data.notes ? ` - Notes: ${data.notes}` : ''}`,
     });
 
-    return updatedPlant;
+    return harvest;
   }
 
   async updatePlantHistory(historyId: string, plantId: string, environmentId: string, data: UpdatePlantHistoryDto, userId: string): Promise<PlantHistory> {

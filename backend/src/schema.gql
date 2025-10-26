@@ -38,6 +38,13 @@ input CreateGeneticsDto {
   name: String!
 }
 
+input CreateHarvestDto {
+  environmentId: String!
+  notes: String
+  plantId: String!
+  weight: Float
+}
+
 input CreateLightDto {
   type: String!
   watts: Float
@@ -97,9 +104,15 @@ type Genetics {
   updatedAt: DateTime!
 }
 
-input HarvestPlantDto {
-  environmentId: String!
-  plantId: String!
+type Harvest {
+  createdAt: DateTime!
+  harvestDate: DateTime!
+  id: ID!
+  notes: String
+  plant: Plant
+  plantId: ID!
+  updatedAt: DateTime!
+  weight: Float
 }
 
 type Light {
@@ -125,6 +138,7 @@ type Mutation {
   createConfiguration(configurationData: String!): String!
   createEnvironment(input: CreateEnvironmentDto!): Environment!
   createGenetics(input: CreateGeneticsDto!): Genetics!
+  createHarvest(input: CreateHarvestDto!): Harvest!
   createLight(environmentId: ID!, input: CreateLightDto!): Light!
   createPlant(environmentId: ID!, input: CreatePlantDto!): Plant!
   createPlantHistory(environmentId: ID!, input: CreatePlantHistoryDto!, plantId: ID!): PlantHistory!
@@ -138,7 +152,6 @@ type Mutation {
   deletePlant(environmentId: ID!, plantId: ID!): Plant!
   deletePlantHistory(environmentId: ID!, historyId: ID!, plantId: ID!): Boolean!
   deletePlantHistoryType(id: ID!): PlantHistoryType!
-  harvestPlant(input: HarvestPlantDto!): Plant!
   login(loginDto: LoginDto!): AuthPayload!
   removeCategoryFromMe(categoryId: String!): ServiceProviderCategory!
   removeUser(id: String!): User!
