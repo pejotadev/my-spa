@@ -228,6 +228,7 @@ export type Mutation = {
   updateGenetics: Genetics;
   updateHarvestHistory: HarvestHistory;
   updateHarvestHistoryType: HarvestHistoryType;
+  updateHarvestStage: Harvest;
   updateLight: Light;
   updatePlant: Plant;
   updatePlantHistory: PlantHistory;
@@ -434,6 +435,12 @@ export type MutationUpdateHarvestHistoryArgs = {
 export type MutationUpdateHarvestHistoryTypeArgs = {
   id: Scalars['ID']['input'];
   input: UpdateHarvestHistoryTypeDto;
+};
+
+
+export type MutationUpdateHarvestStageArgs = {
+  harvestId: Scalars['ID']['input'];
+  input: UpdateHarvestStageDto;
 };
 
 
@@ -691,6 +698,10 @@ export type UpdateHarvestHistoryTypeDto = {
   fields?: InputMaybe<Scalars['String']['input']>;
   isActive?: InputMaybe<Scalars['Boolean']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UpdateHarvestStageDto = {
+  stage: Scalars['String']['input'];
 };
 
 export type UpdateLightDto = {
@@ -996,6 +1007,14 @@ export type UpdatePlantHistoryMutationVariables = Exact<{
 
 
 export type UpdatePlantHistoryMutation = { __typename?: 'Mutation', updatePlantHistory: { __typename?: 'PlantHistory', id: string, stage: string, notes?: string | null, createdAt: any } };
+
+export type UpdateHarvestStageMutationVariables = Exact<{
+  harvestId: Scalars['ID']['input'];
+  input: UpdateHarvestStageDto;
+}>;
+
+
+export type UpdateHarvestStageMutation = { __typename?: 'Mutation', updateHarvestStage: { __typename?: 'Harvest', id: string, stage: string, harvestDate: any, plant?: { __typename?: 'Plant', id: string, code: string, genetics?: { __typename?: 'Genetics', name: string } | null } | null, history?: Array<{ __typename?: 'HarvestHistory', id: string, harvestId: string, stage: string, typeId: string, notes?: string | null, data?: string | null, createdAt: any, type?: { __typename?: 'HarvestHistoryType', id: string, name: string, displayName: string, fields: string } | null }> | null } };
 
 export type DeletePlantHistoryMutationVariables = Exact<{
   historyId: Scalars['ID']['input'];
@@ -2579,6 +2598,64 @@ export function useUpdatePlantHistoryMutation(baseOptions?: ApolloReactHooks.Mut
 export type UpdatePlantHistoryMutationHookResult = ReturnType<typeof useUpdatePlantHistoryMutation>;
 export type UpdatePlantHistoryMutationResult = Apollo.MutationResult<UpdatePlantHistoryMutation>;
 export type UpdatePlantHistoryMutationOptions = Apollo.BaseMutationOptions<UpdatePlantHistoryMutation, UpdatePlantHistoryMutationVariables>;
+export const UpdateHarvestStageDocument = gql`
+    mutation UpdateHarvestStage($harvestId: ID!, $input: UpdateHarvestStageDto!) {
+  updateHarvestStage(harvestId: $harvestId, input: $input) {
+    id
+    stage
+    harvestDate
+    plant {
+      id
+      code
+      genetics {
+        name
+      }
+    }
+    history {
+      id
+      harvestId
+      stage
+      typeId
+      notes
+      data
+      createdAt
+      type {
+        id
+        name
+        displayName
+        fields
+      }
+    }
+  }
+}
+    `;
+export type UpdateHarvestStageMutationFn = Apollo.MutationFunction<UpdateHarvestStageMutation, UpdateHarvestStageMutationVariables>;
+
+/**
+ * __useUpdateHarvestStageMutation__
+ *
+ * To run a mutation, you first call `useUpdateHarvestStageMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateHarvestStageMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateHarvestStageMutation, { data, loading, error }] = useUpdateHarvestStageMutation({
+ *   variables: {
+ *      harvestId: // value for 'harvestId'
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateHarvestStageMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdateHarvestStageMutation, UpdateHarvestStageMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<UpdateHarvestStageMutation, UpdateHarvestStageMutationVariables>(UpdateHarvestStageDocument, options);
+      }
+export type UpdateHarvestStageMutationHookResult = ReturnType<typeof useUpdateHarvestStageMutation>;
+export type UpdateHarvestStageMutationResult = Apollo.MutationResult<UpdateHarvestStageMutation>;
+export type UpdateHarvestStageMutationOptions = Apollo.BaseMutationOptions<UpdateHarvestStageMutation, UpdateHarvestStageMutationVariables>;
 export const DeletePlantHistoryDocument = gql`
     mutation DeletePlantHistory($historyId: ID!, $plantId: ID!, $environmentId: ID!) {
   deletePlantHistory(

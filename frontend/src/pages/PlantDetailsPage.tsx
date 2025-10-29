@@ -11,7 +11,8 @@ import {
   GetPlantHistoryTypesDocument,
   CreateHarvestDocument,
   GetHarvestByPlantDocument,
-  CreateHarvestHistoryDocument
+  CreateHarvestHistoryDocument,
+  UpdateHarvestStageDocument
 } from '../generated/graphql';
 
 const PlantDetailsPage: React.FC = () => {
@@ -19,6 +20,7 @@ const PlantDetailsPage: React.FC = () => {
   const navigate = useNavigate();
   
   const [isEditingStage, setIsEditingStage] = useState(false);
+  const [isEditingHarvestStage, setIsEditingHarvestStage] = useState(false);
   const [isEditingHistory, setIsEditingHistory] = useState<string | null>(null);
   const [isAddingHistory, setIsAddingHistory] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'harvest'>('details');
@@ -30,6 +32,9 @@ const PlantDetailsPage: React.FC = () => {
 
   const [stageFormData, setStageFormData] = useState({
     currentStage: '',
+  });
+  const [harvestStageFormData, setHarvestStageFormData] = useState({
+    stage: '',
   });
   const [historyFormData, setHistoryFormData] = useState({
     stage: '',
@@ -420,6 +425,8 @@ const PlantDetailsPage: React.FC = () => {
   const { data: harvestData, refetch: refetchHarvest } = useQuery(GetHarvestByPlantDocument, {
     variables: { plantId: plantId || '' },
     skip: !plantId,
+    fetchPolicy: 'cache-and-network',
+    notifyOnNetworkStatusChange: true,
   });
 
   const [updatePlantStage] = useMutation(UpdatePlantStageDocument);
@@ -428,6 +435,7 @@ const PlantDetailsPage: React.FC = () => {
   const [createPlantHistory] = useMutation(CreatePlantHistoryDocument);
   const [createHarvest] = useMutation(CreateHarvestDocument);
   const [createHarvestHistory] = useMutation(CreateHarvestHistoryDocument);
+  const [updateHarvestStage] = useMutation(UpdateHarvestStageDocument);
 
   const plant = plantData?.getPlantById;
   const plantHistory = historyData?.getPlantHistory || [];
@@ -467,6 +475,38 @@ const PlantDetailsPage: React.FC = () => {
     return stageTransitions.reverse();
   }, [plantHistory]);
 
+  // Process stage timeline from harvest history
+  const harvestStageTimeline = React.useMemo(() => {
+    if (!harvestHistory.length) return [];
+    
+    // Sort all entries by date (oldest first) to process stage transitions
+    const sortedHistory = [...harvestHistory].sort((a: any, b: any) => 
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+    
+    // Find only actual stage transitions (when stage changes)
+    const stageTransitions = [];
+    let lastStage = null;
+    
+    for (const entry of sortedHistory) {
+      if (entry.stage && entry.stage !== lastStage) {
+        stageTransitions.push({
+          stage: entry.stage,
+          date: new Date(entry.createdAt),
+          formattedDate: new Date(entry.createdAt).toLocaleDateString('en-US', {
+            month: '2-digit',
+            day: '2-digit',
+            year: 'numeric'
+          })
+        });
+        lastStage = entry.stage;
+      }
+    }
+    
+    // Return in reverse order (newest first) for timeline display
+    return stageTransitions.reverse();
+  }, [harvestHistory]);
+
   const plantStages = [
     { value: 'germination', label: 'Germination' },
     { value: 'clone_seedling', label: 'Clone/Seedling' },
@@ -501,6 +541,28 @@ const PlantDetailsPage: React.FC = () => {
       refetchHistory();
     } catch (error) {
       console.error('Error updating plant stage:', error);
+    }
+  };
+
+  const handleUpdateHarvestStage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!harvestStageFormData.stage || !harvest?.id) return;
+
+    try {
+      await updateHarvestStage({
+        variables: {
+          harvestId: harvest.id,
+          input: {
+            stage: harvestStageFormData.stage,
+          },
+        },
+      });
+      setHarvestStageFormData({ stage: '' });
+      setIsEditingHarvestStage(false);
+      // Aguardar explicitamente o refetch para garantir que a UI atualize
+      await refetchHarvest();
+    } catch (error) {
+      console.error('Error updating harvest stage:', error);
     }
   };
 
@@ -1589,6 +1651,151 @@ const PlantDetailsPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Harvest Stage Management */}
+                  {harvest && (
+                    <div className="border-t pt-6">
+                      <div className="flex justify-between items-center mb-4">
+                        <h5 className="text-lg font-medium text-gray-900">Current Harvest Stage</h5>
+                      </div>
+                      
+                      <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <span className="text-sm text-gray-600">Current Stage:</span>
+                            <span className="ml-2 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                              {harvestStages.find(s => s.value === harvest.stage)?.label || harvest.stage}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => setIsEditingHarvestStage(true)}
+                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                          >
+                            Update Stage
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Harvest Stage Update Form */}
+                      {isEditingHarvestStage && (
+                        <div className="bg-white border border-gray-200 rounded-lg p-4">
+                          <h6 className="text-md font-medium text-gray-900 mb-4">Update Harvest Stage</h6>
+                          <form onSubmit={handleUpdateHarvestStage} className="space-y-4">
+                            <div>
+                              <label htmlFor="harvestStage" className="block text-sm font-medium text-gray-700 mb-2">
+                                Select New Stage
+                              </label>
+                              <select
+                                id="harvestStage"
+                                value={harvestStageFormData.stage}
+                                onChange={(e) => setHarvestStageFormData({ stage: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required
+                              >
+                                <option value="">Select a stage</option>
+                                {harvestStages.map((stage) => (
+                                  <option key={stage.value} value={stage.value}>
+                                    {stage.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="flex gap-3">
+                              <button
+                                type="submit"
+                                disabled={!harvestStageFormData.stage}
+                                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                              >
+                                Update Stage
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsEditingHarvestStage(false);
+                                  setHarvestStageFormData({ stage: '' });
+                                }}
+                                className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Harvest Stage Timeline */}
+                  {harvest && (
+                    <div className="border-t pt-6 mb-6">
+                      <div className="bg-white rounded-lg shadow">
+                        <div className="px-6 py-4 border-b border-gray-200">
+                          <h3 className="text-lg font-medium text-gray-900">Harvest Stage Timeline</h3>
+                        </div>
+                        <div className="p-6">
+                          {harvestStageTimeline.length > 0 ? (
+                            <div className="relative">
+                              {/* Timeline line */}
+                              <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-orange-400 to-purple-400"></div>
+                              
+                              {harvestStageTimeline.map((timelineItem: any, index: number) => {
+                                const stageInfo = harvestStages.find(s => s.value === timelineItem.stage);
+                                
+                                return (
+                                  <div key={index} className="relative flex items-center mb-6 last:mb-0">
+                                    {/* Timeline dot */}
+                                    <div className={`relative z-10 w-8 h-8 rounded-full border-4 border-white shadow-lg flex items-center justify-center ${
+                                      timelineItem.stage === 'storage' ? 'bg-purple-500' :
+                                      timelineItem.stage === 'curing' ? 'bg-blue-500' :
+                                      timelineItem.stage === 'trimming' ? 'bg-green-500' :
+                                      'bg-orange-500'
+                                    }`}>
+                                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                                    </div>
+                                    
+                                    {/* Content */}
+                                    <div className="ml-6 flex-1">
+                                      <div className="flex items-center justify-between">
+                                        <div>
+                                          <h4 className="text-lg font-semibold text-gray-900">
+                                            {stageInfo?.label || timelineItem.stage}
+                                          </h4>
+                                          <p className="text-sm text-gray-500">
+                                            Stage transition
+                                          </p>
+                                        </div>
+                                        <div className="text-right">
+                                          <p className="text-sm font-medium text-gray-900">
+                                            {timelineItem.formattedDate}
+                                          </p>
+                                          <p className="text-xs text-gray-500">
+                                            {timelineItem.date.toLocaleTimeString('en-US', {
+                                              hour: '2-digit',
+                                              minute: '2-digit'
+                                            })}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <div className="text-center py-8">
+                              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              </div>
+                              <p className="text-gray-600">No stage changes recorded yet.</p>
+                              <p className="text-sm text-gray-500 mt-1">Stage changes will appear here as you update the harvest's stage.</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Harvest History Section */}
                   <div className="border-t pt-6">

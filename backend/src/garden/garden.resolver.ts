@@ -25,6 +25,7 @@ import { HarvestPlantDto } from './dto/harvest-plant.dto';
 import { CreateHarvestDto } from './dto/create-harvest.dto';
 import { CreateHarvestHistoryDto } from './dto/create-harvest-history.dto';
 import { UpdateHarvestHistoryDto } from './dto/update-harvest-history.dto';
+import { UpdateHarvestStageDto } from './dto/update-harvest-stage.dto';
 import { CreateHarvestHistoryTypeDto } from './dto/harvest-history-type.dto';
 import { UpdateHarvestHistoryTypeDto } from './dto/harvest-history-type.dto';
 import { CreatePlantHistoryTypeDto } from './dto/plant-history-type.dto';
@@ -232,6 +233,15 @@ export class GardenResolver {
     @CurrentUser() user: any
   ): Promise<Harvest> {
     return this.gardenService.createHarvest(input, user.userId);
+  }
+
+  @Mutation(() => Harvest)
+  async updateHarvestStage(
+    @Args('harvestId', { type: () => ID }) harvestId: string,
+    @Args('input') input: UpdateHarvestStageDto,
+    @CurrentUser() user: any
+  ): Promise<Harvest> {
+    return this.gardenService.updateHarvestStage(harvestId, input, user.userId);
   }
 
   @Mutation(() => PlantHistory)

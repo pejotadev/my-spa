@@ -207,6 +207,7 @@ type Mutation {
   updateGenetics(id: ID!, input: UpdateGeneticsDto!): Genetics!
   updateHarvestHistory(harvestId: ID!, historyId: ID!, input: UpdateHarvestHistoryDto!): HarvestHistory!
   updateHarvestHistoryType(id: ID!, input: UpdateHarvestHistoryTypeDto!): HarvestHistoryType!
+  updateHarvestStage(harvestId: ID!, input: UpdateHarvestStageDto!): Harvest!
   updateLight(environmentId: ID!, input: UpdateLightDto!, lightId: ID!): Light!
   updatePlant(environmentId: ID!, input: UpdatePlantDto!, plantId: ID!): Plant!
   updatePlantHistory(environmentId: ID!, historyId: ID!, input: UpdatePlantHistoryDto!, plantId: ID!): PlantHistory!
@@ -321,6 +322,10 @@ input UpdateHarvestHistoryTypeDto {
   fields: String
   isActive: Boolean
   name: String
+}
+
+input UpdateHarvestStageDto {
+  stage: String!
 }
 
 input UpdateLightDto {

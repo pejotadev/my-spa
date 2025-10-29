@@ -24,6 +24,7 @@ import { UpdatePlantHistoryDto } from './dto/update-plant-history.dto';
 import { CreateHarvestDto } from './dto/create-harvest.dto';
 import { CreateHarvestHistoryDto } from './dto/create-harvest-history.dto';
 import { UpdateHarvestHistoryDto } from './dto/update-harvest-history.dto';
+import { UpdateHarvestStageDto } from './dto/update-harvest-stage.dto';
 import { CreateHarvestHistoryTypeDto } from './dto/harvest-history-type.dto';
 import { UpdateHarvestHistoryTypeDto } from './dto/harvest-history-type.dto';
 import { CreatePlantHistoryTypeDto } from './dto/plant-history-type.dto';
@@ -399,6 +400,74 @@ export class GardenService {
     }
 
     return harvest;
+  }
+
+  async updateHarvestStage(harvestId: string, data: UpdateHarvestStageDto, userId: string): Promise<Harvest> {
+    // Verificar se o harvest existe e pertence ao usuário
+    const harvest = await this.prisma.harvest.findFirst({
+      where: { id: harvestId },
+      include: {
+        plant: {
+          include: {
+            environment: true
+          }
+        }
+      }
+    });
+
+    if (!harvest) {
+      throw new NotFoundException('Harvest not found');
+    }
+
+    // Verificar se o environment pertence ao usuário
+    if (harvest.plant.environment.userId !== userId) {
+      throw new ForbiddenException('You do not have permission to update this harvest');
+    }
+
+    // Atualizar o stage atual do harvest
+    console.log('Updating harvest stage:', { harvestId, stage: data.stage });
+    await this.prisma.harvest.update({
+      where: { id: harvestId },
+      data: { stage: data.stage },
+    });
+
+    // Criar entrada no histórico automaticamente
+    await this.prisma.harvestHistory.create({
+      data: {
+        harvestId,
+        stage: data.stage,
+        typeId: 'harvest_type1', // Default to 'notes' type for harvest
+        notes: `Stage changed to ${data.stage}`,
+      },
+    });
+
+    // Buscar o harvest completo com histórico atualizado
+    const updatedHarvest = await this.prisma.harvest.findUnique({
+      where: { id: harvestId },
+      include: {
+        plant: {
+          include: {
+            genetics: true,
+          },
+        },
+        history: {
+          include: {
+            type: true,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
+      },
+    });
+
+    console.log('Updated harvest:', updatedHarvest);
+
+    if (!updatedHarvest) {
+      throw new NotFoundException('Harvest not found after update');
+    }
+
+    return updatedHarvest;
   }
 
   async updatePlantHistory(historyId: string, plantId: string, environmentId: string, data: UpdatePlantHistoryDto, userId: string): Promise<PlantHistory> {
